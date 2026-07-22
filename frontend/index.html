@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+
+    <meta
+      name="description"
+      content="Discover and RSVP to upcoming events at the University of Michigan-Dearborn."
+    />
+
+    <meta name="theme-color" content="#00274c" />
+
+    <title>Campus Events | UM-Dearborn</title>
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <!-- Accessibility shortcut for keyboard users -->
+    <a class="skip-link" href="#main-content">
+      Skip to main content
+    </a>
+
+    <!-- Main application content is rendered here -->
+    <div id="app">
+      <p class="app-loading" role="status">
+        Loading campus events…
+      </p>
+    </div>
+
+    <!-- Fallback message when JavaScript is disabled -->
+    <noscript>
+      <div class="noscript-message">
+        This application requires JavaScript to display campus events.
+      </div>
+    </noscript>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
