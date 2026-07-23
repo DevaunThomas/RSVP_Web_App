@@ -45,7 +45,9 @@
   --shadow-medium: 0 8px 24px rgb(0 39 76 / 12%);
 }
 
-/* Base page styles */
+/* ==========================
+   Base styles
+   ========================== */
 *,
 *::before,
 *::after {
@@ -104,7 +106,9 @@ a:hover {
   flex: 1;
 }
 
-/* Keyboard accessibility */
+/* ==========================
+   Keyboard accessibility
+   ========================== */
 .skip-link {
   position: fixed;
   top: var(--space-3);
@@ -129,7 +133,9 @@ a:hover {
   text-align: center;
 }
 
-/* Reusable button styles */
+/* ==========================
+   Reusable button styles
+   ========================== */
 .button {
   display: inline-flex;
   min-height: 2.75rem;
@@ -189,7 +195,9 @@ a:hover {
   transform: none;
 }
 
-/* Shared navigation */
+/* ==========================
+   Shared header and navigation 
+   ========================== */
 .site-header {
   position: sticky;
   top: 0;
@@ -320,7 +328,9 @@ a:hover {
   }
 }
 
-/* Events page banner */
+/* ==========================
+   Events page banner  
+   ========================== */
 .events-hero {
   position: relative;
   overflow: hidden;
@@ -371,8 +381,9 @@ a:hover {
   }
 }
 
-
-/* Search and date filters */
+/* ==========================
+   Search and date filters 
+   ========================== */
 .event-filters {
   display: grid;
   gap: var(--space-4);
@@ -426,8 +437,11 @@ a:hover {
     align-items: end;
   }
 }
+/* ==========================
+    Event Cards
+    ========================== */
 
-/* Event card layout */
+
 .event-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -562,7 +576,9 @@ a:hover {
   }
 }
 
-/* Page status messages */
+/* ==========================
+   Page loading, empty state, and error state
+   ========================== */
 .page-loading,
 .empty-state,
 .error-state {
@@ -611,7 +627,11 @@ a:hover {
   color: var(--color-danger);
 }
 
-/* Class project footer */
+/* ==========================
+    Footer
+    ========================== */
+
+
 .site-footer {
   border-top: 0.35rem solid var(--color-brand-maize);
   background: var(--color-brand-blue);
@@ -654,7 +674,10 @@ a:hover {
   }
 }
 
-/* Mobile layout adjustments */
+/* ==========================
+   Mobile layout adjustments
+   ========================== */
+
 @media (max-width: 479px) {
   .navbar {
     min-height: 4.5rem;
@@ -719,8 +742,9 @@ a:hover {
   padding-left: var(--page-gutter);
 }
 
-/* Event Details */
-
+/* ==========================
+   Event Details   
+   ========================== */
 .event-details {
   max-width: 800px;
   margin: 2rem auto;
@@ -816,5 +840,215 @@ a:hover {
   .event-not-found {
     margin: 1rem;
     padding: 1.5rem;
+  }
+}
+
+/* ==========================
+   Authentication Pages
+   ========================== */
+
+.auth-page {
+  background-color: #f3f4f6;
+  min-height: calc(100vh - 190px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 3rem 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 520px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 2.5rem 3rem;
+  box-shadow: 0 10px 30px rgba(0, 39, 76, 0.1);
+}
+
+.auth-brand-banner {
+  margin: -2.5rem -3rem 2.5rem;
+  padding: 1.25rem 3rem;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 39, 76, 0.05),
+    rgba(255, 203, 5, 0.09)
+  );
+  border-bottom: 2px solid #ffcb05;
+  border-radius: 14px 14px 0 0;
+}
+
+.auth-brand {
+  text-align: center;
+  margin: 0;
+}
+
+.auth-brand h1 {
+  margin: 0 0 0.5rem;
+  color: #00274c;
+  font-size: 1.8rem;
+}
+
+.auth-brand p {
+  margin: 0;
+  color: #526174;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.auth-header {
+  margin-bottom: 1.75rem;
+}
+
+.auth-header h2 {
+  margin: 0 0 0.5rem;
+  color: #00274c;
+  font-size: 1.85rem;
+  line-height: 1.2;
+}
+
+.auth-header p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0.85rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #1e293b;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.form-group input:hover {
+  border-color: #94a3b8;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #00274c;
+  box-shadow: 0 0 0 3px rgba(0, 39, 76, 0.14);
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 4.75rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  min-width: auto;
+  padding: 0.35rem 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #00274c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.password-toggle:hover {
+  background-color: #eef4f8;
+}
+
+.password-toggle:focus-visible {
+  outline: 3px solid #ffcb05;
+  outline-offset: 2px;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 0.25rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #00274c;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.auth-submit:hover {
+  background-color: #001f3d;
+}
+
+.auth-submit:focus-visible {
+  outline: 3px solid #ffcb05;
+  outline-offset: 2px;
+}
+
+.form-error {
+  min-height: 1rem;
+  margin: 0.35rem 0 0;
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.auth-footer-text {
+  margin: 1.75rem 0 0;
+  text-align: center;
+  color: #475569;
+}
+
+.auth-footer-text a {
+  color: #00274c;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-footer-text a:hover {
+  color: #0056a6;
+}
+
+@media (max-width: 600px) {
+  .auth-page {
+    padding: 2rem 1rem;
+  }
+
+  .auth-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-brand h1 {
+    font-size: 1.75rem;
+  }
+
+  .auth-brand-banner {
+    margin: -2rem -1.5rem 1.75rem;
+    padding: 1.75rem 1.5rem;
   }
 }

@@ -2,19 +2,25 @@ import { renderNavbar, initializeNavbar } from "./components/navbar.js";
 import { renderFooter } from "./components/footer.js";
 import { renderEventsPage } from "./pages/events.js";
 import { renderEventDetails } from "./pages/eventDetails.js";
-
+import { renderLogin } from "./pages/login.js";
 
 const app = document.getElementById("app");
 
 function renderCurrentPage(mainContent) {
   const hash = window.location.hash;
 
+  if (hash === "#/login") {
+    renderLogin(mainContent);
+    return;
+  }
+
   if (hash.startsWith("#event/")) {
     const eventId = hash.split("/")[1];
     renderEventDetails(mainContent, eventId);
-  } else {
-    renderEventsPage(mainContent);
+    return;
   }
+
+  renderEventsPage(mainContent);
 }
 
 function initializeApp() {
@@ -23,7 +29,7 @@ function initializeApp() {
     return;
   }
 
-  // Builds the shared layout with the navbar, main content area & footer
+  // Builds the shared layout with the navbar, main content area, and footer
   app.innerHTML = `
     ${renderNavbar()}
 
@@ -33,9 +39,12 @@ function initializeApp() {
   `;
 
   initializeNavbar();
-  
+
   const mainContent = document.getElementById("main-content");
-  renderCurrentPage(mainContent);
+
+  if (mainContent) {
+    renderCurrentPage(mainContent);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initializeApp);

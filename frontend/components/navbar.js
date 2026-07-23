@@ -35,7 +35,7 @@ export function renderNavbar() {
           </a>
 
           <div class="navbar__actions">
-            <a class="button button--secondary" href="#login">
+            <a class="button button--secondary" href="#/login">
               Log in
             </a>
 
