@@ -4,6 +4,8 @@ import { renderEventsPage } from "./pages/events.js";
 import { renderEventDetails } from "./pages/eventDetails.js";
 import { renderLogin } from "./pages/login.js";
 import { renderRegister } from "./pages/register.js";
+import { renderStudentDashboard } from "./pages/studentDashboard.js";
+import { renderOrganizerDashboard } from "./pages/organizerDashboard.js";
 
 const app = document.getElementById("app");
 
@@ -17,6 +19,19 @@ function renderCurrentPage(mainContent) {
 
   if (hash === "#/register" || hash === "#register") {
     renderRegister(mainContent);
+    return;
+  }
+
+  if (hash === "#/student-dashboard") {
+    renderStudentDashboard(mainContent);
+    return;
+  }
+
+  if (
+    hash === "#/organizer-dashboard" ||
+    hash === "#organizer-dashboard"
+  ) {
+    renderOrganizerDashboard(mainContent);
     return;
   }
 

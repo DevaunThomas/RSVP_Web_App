@@ -18,15 +18,21 @@ campus-event-rsvp-app/
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
+│   ├── assets/
+│   │   └── um-dearborn-logo.webp
 │   │
 │   ├── pages/
-│   │   ├── dashboard.js
+│   │   ├── eventDetails.js
 │   │   ├── events.js
+│   │   ├── login.js
+│   │   ├── organizerDashboard.js
+│   │   ├── register.js
 │   │   ├── rsvp.js
-│   │   └── organizerPanel.js
+│   │   └── studentDashboard.js
 │   │
 │   └── components/
 │       ├── eventCard.js
+│       ├── footer.js
 │       ├── navbar.js
 │       └── rsvpButton.js
 │

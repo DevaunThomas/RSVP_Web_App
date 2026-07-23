@@ -1068,3 +1068,86 @@ a:hover {
   border-color: #00274c;
   box-shadow: 0 0 0 3px rgba(0, 39, 76, 0.12);
 }
+
+/* ==========================
+   Student Dashboard
+   ========================== */
+
+   .dashboard-page {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-header h1 {
+  color: #00274c;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-header p {
+  color: #4b5563;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-card h2 {
+  color: #00274c;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #ffcb05;
+  padding-bottom: 0.5rem;
+}
+
+.dashboard-list p {
+  color: #6b7280;
+}
+
+/* ==========================
+   Organizer Dashboard
+   ========================== */
+   
+.dashboard-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 2px solid #ffcb05;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-card__header h2 {
+  margin: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.dashboard-action {
+  display: inline-block;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  background: #00274c;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-action:hover,
+.dashboard-action:focus {
+  background: #001f3d;
+}
