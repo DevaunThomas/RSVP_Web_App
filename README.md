@@ -22,6 +22,7 @@ campus-event-rsvp-app/
 │   │   └── um-dearborn-logo.webp
 │   │
 │   ├── pages/
+│   │   ├── createEvent.js
 │   │   ├── eventDetails.js
 │   │   ├── events.js
 │   │   ├── login.js

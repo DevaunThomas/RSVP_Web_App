@@ -6,13 +6,14 @@ import { renderLogin } from "./pages/login.js";
 import { renderRegister } from "./pages/register.js";
 import { renderStudentDashboard } from "./pages/studentDashboard.js";
 import { renderOrganizerDashboard } from "./pages/organizerDashboard.js";
+import { renderCreateEvent } from "./pages/createEvent.js";
 
 const app = document.getElementById("app");
 
 function renderCurrentPage(mainContent) {
   const hash = window.location.hash;
 
-  if (hash === "#/login") {
+  if (hash === "#/login" || hash === "#login") {
     renderLogin(mainContent);
     return;
   }
@@ -22,7 +23,10 @@ function renderCurrentPage(mainContent) {
     return;
   }
 
-  if (hash === "#/student-dashboard") {
+  if (
+    hash === "#/student-dashboard" ||
+    hash === "#student-dashboard"
+  ) {
     renderStudentDashboard(mainContent);
     return;
   }
@@ -32,6 +36,11 @@ function renderCurrentPage(mainContent) {
     hash === "#organizer-dashboard"
   ) {
     renderOrganizerDashboard(mainContent);
+    return;
+  }
+
+  if (hash === "#/create-event" || hash === "#create-event") {
+    renderCreateEvent(mainContent);
     return;
   }
 
