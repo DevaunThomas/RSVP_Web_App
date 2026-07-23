@@ -6,6 +6,7 @@ from database import DatabaseHelper
 from routes.event_routes import event_routes
 from routes.rsvp_routes import rsvp_routes
 from routes.user_routes import user_routes
+from routes.attendance_routes import attendance_routes
 
 
 def create_app() -> Flask:
@@ -22,6 +23,7 @@ def create_app() -> Flask:
     app.register_blueprint(user_routes, url_prefix="/api")
     app.register_blueprint(event_routes, url_prefix="/api")
     app.register_blueprint(rsvp_routes, url_prefix="/api")
+    app.register_blueprint(attendance_routes, url_prefix="/api")
 
     @app.get("/")
     def home():

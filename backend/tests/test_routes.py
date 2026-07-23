@@ -399,3 +399,123 @@ def test_rsvp_and_waitlist_flow(client):
     # Verify deletion
     response = client.get(f"/api/rsvps/{rsvp3_id}")
     assert response.status_code == 404
+
+
+def test_attendance_flow(client):
+    """Test attendance flow (check-in, constraints, listing, manual toggling, and deletion)."""
+    # Setup: Create organizer, event, student with registered RSVP, student with waitlisted RSVP, student with no RSVP
+    org_res = client.post("/api/users", json={
+        "name": "Org2", "email": "o2@campus.edu", "password": "p", "role": "organizer"
+    })
+    organizer_id = org_res.get_json()["user_id"]
+
+    # Student 1: will have Registered RSVP
+    stu1_res = client.post("/api/users", json={
+        "name": "Attendee A", "email": "att_a@campus.edu", "password": "p", "role": "student"
+    })
+    student1_id = stu1_res.get_json()["user_id"]
+
+    # Student 2: will have Waitlisted RSVP
+    stu2_res = client.post("/api/users", json={
+        "name": "Attendee B", "email": "att_b@campus.edu", "password": "p", "role": "student"
+    })
+    student2_id = stu2_res.get_json()["user_id"]
+
+    # Student 3: no RSVP at all
+    stu3_res = client.post("/api/users", json={
+        "name": "Attendee C", "email": "att_c@campus.edu", "password": "p", "role": "student"
+    })
+    student3_id = stu3_res.get_json()["user_id"]
+
+    # Event with capacity of 1
+    event_res = client.post("/api/events", json={
+        "title": "Tiny Event",
+        "description": "Cap 1",
+        "event_date": "2026-12-01",
+        "event_time": "15:00:00",
+        "location": "Room 10",
+        "capacity": 1,
+        "organizer_id": organizer_id
+    })
+    event_id = event_res.get_json()["event_id"]
+
+    # RSVP Student 1 -> Registered
+    client.post("/api/rsvps", json={"user_id": student1_id, "event_id": event_id})
+    # RSVP Student 2 -> Waitlisted
+    client.post("/api/rsvps", json={"user_id": student2_id, "event_id": event_id})
+
+    # 1. Deny check-in for user with no RSVP
+    response = client.post(f"/api/events/{event_id}/check-in", json={"user_id": student3_id})
+    assert response.status_code == 400
+    assert "must have a 'Registered' RSVP" in response.get_json()["error"]
+
+    # 2. Deny check-in for waitlisted user
+    response = client.post(f"/api/events/{event_id}/check-in", json={"user_id": student2_id})
+    assert response.status_code == 400
+    assert "must have a 'Registered' RSVP" in response.get_json()["error"]
+
+    # 3. Successful check-in for registered user
+    response = client.post(f"/api/events/{event_id}/check-in", json={"user_id": student1_id})
+    assert response.status_code == 200
+    assert response.get_json()["message"] == "Check-in successful"
+
+    # Verify check-in record details
+    response = client.get(f"/api/events/{event_id}/attendance")
+    assert response.status_code == 200
+    attendance = response.get_json()
+    assert len(attendance) == 1
+    assert attendance[0]["user_id"] == student1_id
+    assert attendance[0]["attended"] == 1
+    assert attendance[0]["check_in_time"] is not None
+
+    # Verify check-in under user's attendance list
+    response = client.get(f"/api/users/{student1_id}/attendance")
+    assert response.status_code == 200
+    user_attendance = response.get_json()
+    assert len(user_attendance) == 1
+    assert user_attendance[0]["event_id"] == event_id
+    assert user_attendance[0]["attended"] == 1
+
+    # 4. Manual update: mark attended as false
+    response = client.patch(f"/api/events/{event_id}/attendance/{student1_id}", json={"attended": False})
+    assert response.status_code == 200
+    assert response.get_json()["message"] == "Attendance status updated successfully"
+
+    # Verify updated state
+    response = client.get(f"/api/events/{event_id}/attendance")
+    assert response.get_json()[0]["attended"] == 0
+
+    # 5. Manual update: deny marking True if not registered (e.g. waitlisted student 2)
+    response = client.patch(f"/api/events/{event_id}/attendance/{student2_id}", json={"attended": True})
+    assert response.status_code == 400
+    assert "must have a 'Registered' RSVP" in response.get_json()["error"]
+
+    # 6. Deletion of attendance record
+    response = client.delete(f"/api/events/{event_id}/attendance/{student1_id}")
+    assert response.status_code == 200
+    assert response.get_json()["message"] == "Attendance record deleted successfully"
+
+    # Verify deleted
+    response = client.get(f"/api/events/{event_id}/attendance")
+    assert len(response.get_json()) == 0
+
+    # 7. Deny check-in for canceled event
+    event_res2 = client.post("/api/events", json={
+        "title": "Cancel Checkin Event",
+        "description": "Temp event",
+        "event_date": "2026-12-05",
+        "event_time": "15:00:00",
+        "location": "Room 11",
+        "capacity": 10,
+        "organizer_id": organizer_id
+    })
+    event_id2 = event_res2.get_json()["event_id"]
+    client.post("/api/rsvps", json={"user_id": student1_id, "event_id": event_id2})
+
+    # Cancel event
+    client.patch(f"/api/events/{event_id2}/cancel")
+
+    # Attempt check-in
+    response = client.post(f"/api/events/{event_id2}/check-in", json={"user_id": student1_id})
+    assert response.status_code == 400
+    assert "Cannot check in to a canceled event" in response.get_json()["error"]
