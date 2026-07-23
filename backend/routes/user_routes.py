@@ -34,7 +34,10 @@ def create_user():
         user_id = User.create(
             name=data["name"].strip(),
             email=data["email"].strip().lower(),
-            password_hash=generate_password_hash(data["password"]),
+            password_hash=generate_password_hash(
+                data["password"],
+                method="pbkdf2:sha256"
+                ),
             role=data["role"]
         )
 

@@ -249,21 +249,38 @@ function initializeCreateEventForm() {
     }
 
     const eventData = {
-      title,
-      description,
-      event_date: eventDate,
-      event_time: eventTime,
-      location,
-      capacity,
-    };
-
-    console.log("Event form is ready for backend integration.", {
-      title: eventData.title,
-      description: eventData.description,
-      event_date: eventData.event_date,
-      event_time: eventData.event_time,
-      location: eventData.location,
-      capacity: eventData.capacity,
+        title,
+        description,
+        event_date: eventDate,
+        event_time: eventTime,
+        location,
+        capacity,
+        organizer_id: 1 // Temporary until login is connected
+        };
+        
+        fetch("http://127.0.0.1:5000/api/events", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            
+            body: JSON.stringify(eventData),
+        })
+        
+        .then(async (response) => {
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to create event.");
+            }
+            
+            alert("Event created successfully!");
+            
+            window.location.hash = "#/organizer-dashboard";
+        })
+        .catch((error) => {
+            alert(error.message);
+            console.error(error);
+        });
     });
-  });
 }
