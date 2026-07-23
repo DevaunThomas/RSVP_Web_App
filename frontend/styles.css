@@ -1052,3 +1052,19 @@ a:hover {
     padding: 1.75rem 1.5rem;
   }
 }
+
+.auth-form select {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border: 1px solid #d5dde7;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #1f2937;
+  font: inherit;
+}
+
+.auth-form select:focus {
+  outline: none;
+  border-color: #00274c;
+  box-shadow: 0 0 0 3px rgba(0, 39, 76, 0.12);
+}

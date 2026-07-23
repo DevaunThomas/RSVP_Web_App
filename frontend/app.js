@@ -3,6 +3,7 @@ import { renderFooter } from "./components/footer.js";
 import { renderEventsPage } from "./pages/events.js";
 import { renderEventDetails } from "./pages/eventDetails.js";
 import { renderLogin } from "./pages/login.js";
+import { renderRegister } from "./pages/register.js";
 
 const app = document.getElementById("app");
 
@@ -11,6 +12,11 @@ function renderCurrentPage(mainContent) {
 
   if (hash === "#/login") {
     renderLogin(mainContent);
+    return;
+  }
+
+  if (hash === "#/register" || hash === "#register") {
+    renderRegister(mainContent);
     return;
   }
 
