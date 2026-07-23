@@ -2,7 +2,9 @@ import sqlite3
 import os
 from typing import List, Dict, Any, Tuple, Optional
 
-DB_FILE_PATH = os.path.join(os.path.dirname(__file__), "campus_events.db")
+from config import Config
+
+DB_FILE_PATH = Config.DATABASE_PATH
 SCHEMA_FILE_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 class DatabaseHelper:
