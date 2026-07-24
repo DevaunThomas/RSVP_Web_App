@@ -286,12 +286,39 @@ a:hover {
 
 .navbar__actions {
   display: flex;
+  align-items: stretch;
   flex-direction: column;
   gap: var(--space-3);
 }
 
 .navbar__actions .button {
   width: 100%;
+}
+
+.navbar__user {
+  display: flex;
+  min-height: 44px;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0.4rem 0.75rem;
+  color: var(--color-brand-blue);
+}
+
+.navbar__user-name {
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.navbar__user-role {
+  margin-top: 0.2rem;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  line-height: 1;
+  text-transform: capitalize;
+}
+
+.navbar__logout {
+  white-space: nowrap;
 }
 
 /* Desktop navigation */
@@ -320,9 +347,9 @@ a:hover {
   }
 
   .navbar__actions {
+    align-items: center;
     flex-direction: row;
   }
-
   .navbar__actions .button {
     width: auto;
   }

@@ -1,5 +1,20 @@
+import { getCurrentUser } from "../utils/session.js";
+
 // Render the create event page
 export function renderCreateEvent(mainContent) {
+
+  const currentUser = getCurrentUser();
+
+  if (!currentUser) {
+    window.location.hash = "#/login";
+    return;
+  }
+
+  if (currentUser.role !== "organizer") {
+    window.location.hash = "#/student-dashboard";
+    return;
+  }
+
   mainContent.innerHTML = `
     <section class="form-page">
       <div class="form-page__header">
@@ -255,7 +270,7 @@ function initializeCreateEventForm() {
         event_time: eventTime,
         location,
         capacity,
-        organizer_id: 1 // Temporary until login is connected
+        organizer_id: currentUser.user_id
         };
         
         fetch("http://127.0.0.1:5000/api/events", {

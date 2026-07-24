@@ -1,3 +1,5 @@
+import { getCurrentUser } from "../utils/session.js";
+
 function formatEventDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
 
@@ -67,6 +69,8 @@ export async function renderEventDetails(mainContent, eventId) {
     return;
   }
 
+  const currentUser = getCurrentUser();
+
   mainContent.innerHTML = `
     <section class="page-loading" role="status" aria-live="polite">
       <p>Loading event details…</p>
@@ -104,7 +108,6 @@ export async function renderEventDetails(mainContent, eventId) {
         apiEvent.status?.toLowerCase() === "active"
           ? "open"
           : apiEvent.status?.toLowerCase() || "open",
-    
     };
 
     const remainingSpots = Math.max(
@@ -187,8 +190,13 @@ export async function renderEventDetails(mainContent, eventId) {
     `;
     
     const rsvpButton = mainContent.querySelector("#rsvp-button");
-    
-    if (rsvpButton && !isUnavailable) {
+
+    if (
+      rsvpButton &&
+      !isUnavailable &&
+      currentUser &&
+      currentUser.role === "student"
+    ) {
       rsvpButton.addEventListener("click", async () => {
         rsvpButton.disabled = true;
         rsvpButton.textContent = "Submitting...";
@@ -203,7 +211,7 @@ export async function renderEventDetails(mainContent, eventId) {
               },
               
               body: JSON.stringify({
-                user_id: 2,
+                user_id: currentUser.user_id,
                 event_id: numericEventId,
               }),
             }
@@ -230,6 +238,28 @@ export async function renderEventDetails(mainContent, eventId) {
           rsvpButton.textContent = "RSVP";
         }
       });
+    }
+
+    if (
+      rsvpButton &&
+      !isUnavailable &&
+      !currentUser
+    ) {
+      rsvpButton.textContent = "Log in to RSVP";
+
+      rsvpButton.addEventListener("click", () => {
+        window.location.hash = "#/login";
+      });
+    }
+
+    if (
+      rsvpButton &&
+      !isUnavailable &&
+      currentUser &&
+      currentUser.role !== "student"
+    ) {
+      rsvpButton.disabled = true;
+      rsvpButton.textContent = "Students Only";
     }
 
   } catch (error) {

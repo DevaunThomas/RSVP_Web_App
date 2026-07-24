@@ -169,11 +169,14 @@ function initializeLoginForm() {
         "currentUser",
         JSON.stringify(data.user)
       );
-
+      
       window.location.hash =
         data.user.role === "organizer"
           ? "#/organizer-dashboard"
           : "#/student-dashboard";
+
+      window.location.reload();
+
     } catch (error) {
       passwordError.textContent = error.message;
       console.error("Login failed.", error);

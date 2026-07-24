@@ -6,5 +6,7 @@ export function getCurrentUser() {
 
 export function logout() {
   localStorage.removeItem("currentUser");
+
   window.location.hash = "#/login";
+  window.location.reload();
 }

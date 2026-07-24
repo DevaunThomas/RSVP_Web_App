@@ -175,7 +175,7 @@ function initializeRegisterForm() {
     );
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const nameInput = document.getElementById("register-name");
@@ -271,11 +271,49 @@ function initializeRegisterForm() {
       role,
     };
 
-    console.log("Registration form is valid.", {
-      name: registrationData.name,
-      email: registrationData.email,
-      role: registrationData.role,
-    });
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Creating Account...";
+    }
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/users",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(registrationData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          emailError.textContent =
+            data.error || "An account with this email already exists.";
+          return;
+        }
+
+        throw new Error(data.error || "Unable to create account.");
+      }
+
+      alert("Account created successfully. Please sign in.");
+      window.location.hash = "#/login";
+    } catch (error) {
+      console.error("Registration failed.", error);
+      roleError.textContent =
+        error.message || "Unable to create account.";
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Create Account";
+      }
+    }
   });
 }
 
