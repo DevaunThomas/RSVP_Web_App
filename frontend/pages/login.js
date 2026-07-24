@@ -116,7 +116,7 @@ function initializeLoginForm() {
     );
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     emailError.textContent = "";
@@ -144,9 +144,39 @@ function initializeLoginForm() {
       return;
     }
 
-    console.log("Login form is ready for backend integration.", {
-      email,
-      password,
-    });
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to log in.");
+      }
+
+      localStorage.setItem(
+        "currentUser",
+        JSON.stringify(data.user)
+      );
+
+      window.location.hash =
+        data.user.role === "organizer"
+          ? "#/organizer-dashboard"
+          : "#/student-dashboard";
+    } catch (error) {
+      passwordError.textContent = error.message;
+      console.error("Login failed.", error);
+    }
   });
 }

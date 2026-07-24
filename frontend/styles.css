@@ -1243,3 +1243,95 @@ a:hover {
     flex-direction: column-reverse;
   }
 }
+
+/* ==========================
+   RSVP Card 
+   ========================== */
+
+  .rsvp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 320px));
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.rsvp-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 280px;
+  background: #ffffff;
+  border: 1px solid #d7dee8;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 39, 76, 0.08);
+  overflow: hidden;
+}
+
+.rsvp-card__body {
+  padding: 1.5rem;
+}
+
+.rsvp-card__title {
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.75rem;
+  color: #00274c;
+  font-size: 1.25rem;
+  border-bottom: 2px solid #ffcb05;
+}
+
+.rsvp-card__details {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+}
+
+.rsvp-card__detail {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.rsvp-card__detail dt {
+  color: #4b5563;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rsvp-card__detail dd {
+  margin: 0;
+  color: #1f2937;
+  overflow-wrap: anywhere;
+}
+
+.rsvp-card__footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #d7dee8;
+}
+
+/* ==========================
+   RSVP Status Styles
+   ========================== */
+  .rsvp-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.rsvp-status--registered {
+  background: #e7f6ec;
+  color: #137333;
+}
+
+.rsvp-status--waitlisted {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.rsvp-status--canceled {
+  background: #fde8e8;
+  color: #b42318;
+}

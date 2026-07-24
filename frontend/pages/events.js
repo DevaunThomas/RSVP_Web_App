@@ -109,7 +109,7 @@ export async function renderEventsPage(container) {
       location: event.location,
       organizer: event.organizer_name || "Unknown organizer",
       capacity: Number(event.capacity) || 0,
-      rsvpCount: Number(event.rsvp_count) || 0,
+      rsvpCount: Number(event.registered_count) || 0,
        status:
         event.status?.toLowerCase() === "active"
           ? "open"
