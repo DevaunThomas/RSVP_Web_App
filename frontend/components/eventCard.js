@@ -119,7 +119,7 @@ export function renderEventCard(event) {
 
         <a
           class="button button--primary"
-          href="#event/${escapeHtml(event.id)}"
+          href="#/event/${escapeHtml(event.id)}"
           aria-label="View details for ${escapeHtml(event.title)}"
         >
           View Details

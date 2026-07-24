@@ -43,9 +43,10 @@ function renderCurrentPage(mainContent) {
     renderCreateEvent(mainContent);
     return;
   }
-
-  if (hash.startsWith("#event/")) {
-    const eventId = hash.split("/")[1];
+  
+  if (hash.startsWith("#/event/") || hash.startsWith("#event/")) {
+    const eventId = hash.split("/").pop();
+    
     renderEventDetails(mainContent, eventId);
     return;
   }

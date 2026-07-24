@@ -110,7 +110,10 @@ export async function renderEventsPage(container) {
       organizer: event.organizer_name || "Unknown organizer",
       capacity: Number(event.capacity) || 0,
       rsvpCount: Number(event.rsvp_count) || 0,
-      status: event.status || "open",
+       status:
+        event.status?.toLowerCase() === "active"
+          ? "open"
+          : event.status?.toLowerCase() || "open",
     }));
     
     const sortedEvents = sortEventsByDate(events);
