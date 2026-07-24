@@ -1,7 +1,10 @@
 import sqlite3
 
 from flask import Blueprint, jsonify, request
-from werkzeug.security import generate_password_hash
+from werkzeug.security import (
+    check_password_hash,
+    generate_password_hash,
+)
 
 from models.user import User
 
@@ -34,7 +37,10 @@ def create_user():
         user_id = User.create(
             name=data["name"].strip(),
             email=data["email"].strip().lower(),
-            password_hash=generate_password_hash(data["password"]),
+            password_hash=generate_password_hash(
+                data["password"],
+                method="pbkdf2:sha256"
+                ),
             role=data["role"]
         )
 
@@ -115,4 +121,37 @@ def delete_user(user_id: int):
 
     return jsonify({
         "message": "User deleted successfully"
+    }), 200
+
+
+@user_routes.post("/login")
+def login_user():
+    data = request.get_json(silent=True) or {}
+
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({
+            "error": "Email and password are required"
+        }), 400
+
+    user = User.get_by_email(email)
+
+    if not user or not check_password_hash(
+        user["password_hash"],
+        password
+    ):
+        return jsonify({
+            "error": "Invalid email or password"
+        }), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "user": {
+            "user_id": user["user_id"],
+            "name": user["name"],
+            "email": user["email"],
+            "role": user["role"]
+        }
     }), 200

@@ -47,11 +47,29 @@ class Event:
         query = """
             SELECT
                 Events.*,
-                Users.name AS organizer_name
+                Users.name AS organizer_name,
+
+                -- Count only active registrations for each event.
+                COUNT(
+                    CASE
+                        WHEN RSVPs.rsvp_status = 'Registered'
+                        THEN 1
+                    END
+                ) AS registered_count
+
             FROM Events
+
             JOIN Users
                 ON Events.organizer_id = Users.user_id
-            ORDER BY event_date, event_time
+
+            -- Keep events that do not have any RSVPs.
+            LEFT JOIN RSVPs
+                ON Events.event_id = RSVPs.event_id
+
+            -- Required because this query uses COUNT.
+            GROUP BY Events.event_id
+
+            ORDER BY Events.event_date, Events.event_time
         """
 
         return DatabaseHelper.execute_query(query)
@@ -61,12 +79,31 @@ class Event:
         query = """
             SELECT
                 Events.*,
-                Users.name AS organizer_name
+                Users.name AS organizer_name,
+
+                -- Count only active registrations for each event.
+                COUNT(
+                    CASE
+                        WHEN RSVPs.rsvp_status = 'Registered'
+                        THEN 1
+                    END
+                ) AS registered_count
+
             FROM Events
+
             JOIN Users
                 ON Events.organizer_id = Users.user_id
+
+            -- Keep active events even when they have no RSVPs.
+            LEFT JOIN RSVPs
+                ON Events.event_id = RSVPs.event_id
+
             WHERE Events.status != 'Canceled'
-            ORDER BY event_date, event_time
+
+            -- Required because this query uses COUNT.
+            GROUP BY Events.event_id
+
+            ORDER BY Events.event_date, Events.event_time
         """
 
         return DatabaseHelper.execute_query(query)
@@ -76,22 +113,57 @@ class Event:
         query = """
             SELECT
                 Events.*,
-                Users.name AS organizer_name
+                Users.name AS organizer_name,
+
+                -- Include the current number of registered students.
+                COUNT(
+                    CASE
+                        WHEN RSVPs.rsvp_status = 'Registered'
+                        THEN 1
+                    END
+                ) AS registered_count
+
             FROM Events
+
             JOIN Users
                 ON Events.organizer_id = Users.user_id
+
+            LEFT JOIN RSVPs
+                ON Events.event_id = RSVPs.event_id
+
             WHERE Events.event_id = ?
+
+            GROUP BY Events.event_id
         """
 
         return DatabaseHelper.execute_query_one(query, (event_id,))
 
     @staticmethod
-    def get_by_organizer(organizer_id: int) -> List[Dict[str, Any]]:
+    def get_by_organizer(
+        organizer_id: int
+    ) -> List[Dict[str, Any]]:
         query = """
-            SELECT *
+            SELECT
+                Events.*,
+
+                -- Include registered count for organizer dashboard cards.
+                COUNT(
+                    CASE
+                        WHEN RSVPs.rsvp_status = 'Registered'
+                        THEN 1
+                    END
+                ) AS registered_count
+
             FROM Events
-            WHERE organizer_id = ?
-            ORDER BY event_date, event_time
+
+            LEFT JOIN RSVPs
+                ON Events.event_id = RSVPs.event_id
+
+            WHERE Events.organizer_id = ?
+
+            GROUP BY Events.event_id
+
+            ORDER BY Events.event_date, Events.event_time
         """
 
         return DatabaseHelper.execute_query(query, (organizer_id,))
@@ -146,7 +218,11 @@ class Event:
 
     @staticmethod
     def delete(event_id: int) -> int:
-        query = "DELETE FROM Events WHERE event_id = ?"
+        query = """
+            DELETE FROM Events
+            WHERE event_id = ?
+        """
+
         return DatabaseHelper.execute_write(query, (event_id,))
 
     @staticmethod
@@ -158,5 +234,9 @@ class Event:
               AND rsvp_status = 'Registered'
         """
 
-        result = DatabaseHelper.execute_query_one(query, (event_id,))
+        result = DatabaseHelper.execute_query_one(
+            query,
+            (event_id,)
+        )
+
         return result["registered_count"] if result else 0
