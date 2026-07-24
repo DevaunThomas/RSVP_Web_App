@@ -1,5 +1,4 @@
 import { renderEventCard } from "../components/eventCard.js";
-import { mockEvents } from "../data/mockEvents.js";
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -86,15 +85,38 @@ export async function renderEventsPage(container) {
   `;
 
   try {
-    // Mock data will be replaced with an API request during backend integration
-    const events = await Promise.resolve(mockEvents);
+    const response = await fetch(
+      "http://127.0.0.1:5000/api/events"
+    );
 
-    if (!Array.isArray(events)) {
+    if (!response.ok) {
+      throw new Error("Failed to load events.");
+    }
+
+    const apiEvents = await response.json();
+
+    if (!Array.isArray(apiEvents)) {
       throw new Error("Event data must be an array.");
     }
 
+    const events = apiEvents.map((event) => ({
+      id: event.event_id,
+      title: event.title,
+      description: event.description || "",
+      date: event.event_date,
+      startTime: event.event_time,
+      endTime: event.end_time || null,
+      location: event.location,
+      organizer: event.organizer_name || "Unknown organizer",
+      capacity: Number(event.capacity) || 0,
+      rsvpCount: Number(event.rsvp_count) || 0,
+      status: event.status || "open",
+    }));
+    
     const sortedEvents = sortEventsByDate(events);
 
+  
+    
     container.innerHTML = `
       <section class="events-hero">
         <div class="events-hero__content">

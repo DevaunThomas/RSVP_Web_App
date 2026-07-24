@@ -71,6 +71,7 @@ export function renderEventCard(event) {
     ? `${formatEventTime(event.startTime)} – ${formatEventTime(event.endTime)}`
     : formatEventTime(event.startTime);
 
+    
   // Builds one reusable card for the event listing
   return `
     <article
