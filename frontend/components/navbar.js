@@ -9,11 +9,26 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+
 export function renderNavbar() {
   const currentUser = getCurrentUser();
 
+  const dashboardRoute =
+    currentUser?.role === "organizer"
+      ? "#/organizer-dashboard"
+      : "#/student-dashboard";
+
+  const dashboardLabel = "Dashboard";
+
   const authButtons = currentUser
     ? `
+      <a
+        class="navbar__link"
+        href="${dashboardRoute}"
+      >
+        ${dashboardLabel}
+      </a>
+
       <div class="navbar__user" aria-label="Signed in user">
         <span class="navbar__user-name">
           ${escapeHtml(currentUser.name)}

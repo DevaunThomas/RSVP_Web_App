@@ -288,7 +288,7 @@ a:hover {
   display: flex;
   align-items: stretch;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0.5rem;
 }
 
 .navbar__actions .button {
@@ -349,6 +349,7 @@ a:hover {
   .navbar__actions {
     align-items: center;
     flex-direction: row;
+    gap: 0.5rem;
   }
   .navbar__actions .button {
     width: auto;
@@ -1100,7 +1101,7 @@ a:hover {
    Student Dashboard
    ========================== */
 
-   .dashboard-page {
+  .dashboard-page {
   max-width: 1100px;
   margin: 2rem auto;
   padding: 0 1.5rem;
@@ -1143,6 +1144,12 @@ a:hover {
   color: #6b7280;
 }
 
+.dashboard-list__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 /* ==========================
    Organizer Dashboard
    ========================== */
@@ -1177,6 +1184,12 @@ a:hover {
 .dashboard-action:hover,
 .dashboard-action:focus {
   background: #001f3d;
+}
+
+.dashboard-list__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 /* ==========================

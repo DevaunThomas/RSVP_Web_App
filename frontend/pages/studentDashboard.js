@@ -35,7 +35,6 @@ function formatEventTime(timeString) {
   }).format(date);
 }
 
-
 // Render the student dashboard page
 export async function renderStudentDashboard(mainContent) {
   const currentUser = getCurrentUser();
@@ -89,6 +88,10 @@ export async function renderStudentDashboard(mainContent) {
 
     const rsvps = await response.json();
 
+    const activeRsvps = rsvps.filter(
+      (rsvp) => rsvp.rsvp_status !== "Canceled"
+    );
+
     mainContent.innerHTML = `
       <section class="dashboard-page">
         <div class="dashboard-header">
@@ -124,8 +127,8 @@ export async function renderStudentDashboard(mainContent) {
 
             <div class="rsvp-grid">
               ${
-                rsvps.length > 0
-                  ? rsvps
+                activeRsvps.length > 0
+                  ? activeRsvps
                       .map(
                         (rsvp) => `
                           <article class="rsvp-card">
@@ -160,17 +163,33 @@ export async function renderStudentDashboard(mainContent) {
                                     </span>
                                   </dd>
                                 </div>
-                                
+
                               </dl>
                             </div>
 
                             <div class="rsvp-card__footer">
-                              <a
-                                href="#/event/${rsvp.event_id}"
-                                class="button button--primary"
-                              >
-                                View Event
-                              </a>
+                              <div class="dashboard-list__actions">
+                                <a
+                                  href="#/event/${rsvp.event_id}"
+                                  class="button button--primary"
+                                >
+                                  View Event
+                                </a>
+
+                                ${
+                                  rsvp.rsvp_status === "Registered"
+                                    ? `
+                                      <button
+                                        class="button button--secondary cancel-rsvp-button"
+                                        type="button"
+                                        data-rsvp-id="${rsvp.rsvp_id}"
+                                      >
+                                        Cancel RSVP
+                                      </button>
+                                    `
+                                    : ""
+                                }
+                              </div>
                             </div>
                           </article>
                         `
@@ -184,6 +203,59 @@ export async function renderStudentDashboard(mainContent) {
         </div>
       </section>
     `;
+
+    const cancelButtons = mainContent.querySelectorAll(
+      ".cancel-rsvp-button"
+    );
+
+    cancelButtons.forEach((cancelButton) => {
+      cancelButton.addEventListener("click", async () => {
+        const rsvpId = cancelButton.dataset.rsvpId;
+
+        if (!rsvpId) {
+          console.error("RSVP ID was not found.");
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "Are you sure you want to cancel your RSVP?"
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        cancelButton.disabled = true;
+        cancelButton.textContent = "Canceling...";
+
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:5000/api/rsvps/${rsvpId}/cancel`,
+            {
+              method: "PATCH",
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || "Unable to cancel RSVP."
+            );
+          }
+
+          alert("RSVP canceled successfully.");
+
+          await renderStudentDashboard(mainContent);
+        } catch (error) {
+          console.error("Failed to cancel RSVP.", error);
+          alert(error.message);
+
+          cancelButton.disabled = false;
+          cancelButton.textContent = "Cancel RSVP";
+        }
+      });
+    });
   } catch (error) {
     console.error(error);
 
