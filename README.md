@@ -9,6 +9,10 @@ SQLite database will store event details, user information, RSVP records, attend
 ## Before You Begin (PLEASE READ):
 Please create your own branch with your name as the branch name. This will be where you make your changes and edits. Only changes that are approved by the group will be committed to the main branch. This will prevent people working on top of eachother and will give us updated starting points in case a branch breaks and someone needs to repull everything. If multiple people are working on a certain part (backend or frontend), please communicate with each other so that your changes are working together. Lastly, any updates you make to your branch should be shared in the groupchat so all members are up-to-date with each other.
 
+## To run program:
+From the root folder, use command: .\start.ps1
+A new powershell window may open. Leave it open as it has the backend running there.
+
 ## App Structure:
 
 ```
