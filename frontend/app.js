@@ -1,5 +1,4 @@
-import { renderNavbar, initializeNavbar } from "./components/navbar.js";
-import { renderFooter } from "./components/footer.js";
+import { renderNavbar, initializeNavbar, updateNavbarActiveState } from "./components/navbar.js";import { renderFooter } from "./components/footer.js";
 import { renderEventsPage } from "./pages/events.js";
 import { renderEventDetails } from "./pages/eventDetails.js";
 import { renderLogin } from "./pages/login.js";
@@ -14,6 +13,8 @@ const app = document.getElementById("app");
 
 function renderCurrentPage(mainContent) {
   const hash = window.location.hash;
+
+  updateNavbarActiveState();
 
   if (hash === "#/login" || hash === "#login") {
     renderLogin(mainContent);

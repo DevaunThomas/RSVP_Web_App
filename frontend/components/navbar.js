@@ -25,6 +25,7 @@ export function renderNavbar() {
       <a
         class="navbar__link"
         href="${dashboardRoute}"
+        data-nav-route="dashboard"
       >
         ${dashboardLabel}
       </a>
@@ -88,8 +89,9 @@ export function renderNavbar() {
 
         <div class="navbar__menu" id="navbar-menu">
           <a
-            class="navbar__link navbar__link--active"
+            class="navbar__link"
             href="#/events"
+            data-nav-route="events"
           >
             Events
           </a>
@@ -101,6 +103,56 @@ export function renderNavbar() {
       </nav>
     </header>
   `;
+}
+
+export function updateNavbarActiveState() {
+  const route = window.location.hash
+    .replace(/^#\/?/, "")
+    .toLowerCase();
+
+  const dashboardRoutes = [
+    "student-dashboard",
+    "organizer-dashboard",
+    "create-event",
+  ];
+
+  const isDashboardRoute =
+    dashboardRoutes.includes(route) ||
+    route.startsWith("edit-event/") ||
+    route.startsWith("manage-attendees/");
+
+  const isEventsRoute =
+    route === "" ||
+    route === "events" ||
+    route.startsWith("event/");
+
+  let activeRoute = null;
+
+  if (isDashboardRoute) {
+    activeRoute = "dashboard";
+  } else if (isEventsRoute) {
+    activeRoute = "events";
+  }
+
+  const navigationLinks = document.querySelectorAll(
+    "[data-nav-route]"
+  );
+
+  navigationLinks.forEach((link) => {
+    const isActive =
+      link.dataset.navRoute === activeRoute;
+
+    link.classList.toggle(
+      "navbar__link--active",
+      isActive
+    );
+
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
 }
 
 export function initializeNavbar() {
