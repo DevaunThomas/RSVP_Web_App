@@ -1,5 +1,6 @@
 import { renderEventCard } from "../components/eventCard.js";
 import { getCurrentUser } from "../utils/session.js";
+import { resolveEventStatus } from "../utils/eventStatus.js";
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -61,20 +62,28 @@ export async function renderStudentDashboard(mainContent) {
 
     const apiEvents = await eventsResponse.json();
 
+    const dashboardEvents = apiEvents.map((event) => ({
+      id: event.event_id,
+      title: event.title,
+      description: event.description || "",
+      date: event.event_date,
+      startTime: event.event_time,
+      endTime: event.end_time || null,
+      location: event.location,
+      organizer:
+        event.organizer_name || "Unknown organizer",
+      capacity: Number(event.capacity) || 0,
+      rsvpCount: Number(event.registered_count) || 0,
+      status: event.status || "Active",
+    }));
+
     const upcomingEvents = sortEventsByDate(
-      apiEvents.map((event) => ({
-        id: event.event_id,
-        title: event.title,
-        description: event.description || "",
-        date: event.event_date,
-        startTime: event.event_time,
-        endTime: event.end_time || null,
-        location: event.location,
-        organizer: event.organizer_name || "Unknown organizer",
-        capacity: Number(event.capacity) || 0,
-        rsvpCount: Number(event.registered_count) || 0,
-        status: (event.status || "Open").toLowerCase(),
-      }))
+      dashboardEvents
+        .map((event) => ({
+          ...event,
+          status: resolveEventStatus(event),
+        }))
+        .filter((event) => event.status !== "past")
     ).slice(0, 3);
 
     // Load student's RSVPs

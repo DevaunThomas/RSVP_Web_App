@@ -1,4 +1,10 @@
-import { renderEventCard } from "../components/eventCard.js";
+import {
+  renderEventCard }
+  from "../components/eventCard.js";
+
+import {
+  resolveEventStatus
+} from "../utils/eventStatus.js";
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -116,7 +122,14 @@ export async function renderEventsPage(container) {
           : event.status?.toLowerCase() || "open",
     }));
     
-    const sortedEvents = sortEventsByDate(events);
+    const upcomingEvents = events
+  .map((event) => ({
+    ...event,
+    status: resolveEventStatus(event),
+  }))
+  .filter((event) => event.status !== "past");
+
+const sortedEvents = sortEventsByDate(upcomingEvents);
 
   
     

@@ -1,4 +1,7 @@
 import { getCurrentUser } from "../utils/session.js";
+import {
+  resolveEventStatus
+} from "../utils/eventStatus.js";
 
 function formatEventDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -104,11 +107,10 @@ export async function renderEventDetails(mainContent, eventId) {
       organizer: apiEvent.organizer_name || "Unknown organizer",
       capacity: Number(apiEvent.capacity) || 0,
       rsvpCount: Number(apiEvent.registered_count) || 0,
-      status:
-        apiEvent.status?.toLowerCase() === "active"
-          ? "open"
-          : apiEvent.status?.toLowerCase() || "open",
+      status: apiEvent.status || "Active",
     };
+
+    event.status = resolveEventStatus(event);
 
     const remainingSpots = Math.max(
       event.capacity - event.rsvpCount,
