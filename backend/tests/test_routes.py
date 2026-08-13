@@ -693,3 +693,64 @@ def test_notifications_and_reminders_flow(client):
     reminder_notifs = [n for n in res_reminders.get_json() if n["notification_type"] == "Reminder"]
     assert len(reminder_notifs) == 1
     assert "Reminder Event" in reminder_notifs[0]["message"]
+
+
+def test_waitlist_promotion_automation(client):
+    """Test that canceling a registered RSVP automatically promotes the next waitlisted user and sends a notification."""
+    # Create organizer
+    org_res = client.post("/api/users", json={
+        "name": "Waitlist Org", "email": "wait_org@campus.edu", "password": "p", "role": "organizer"
+    })
+    organizer_id = org_res.get_json()["user_id"]
+    org_headers = get_auth_headers(organizer_id, "organizer", "Waitlist Org", "wait_org@campus.edu")
+
+    # Create Student 1 and Student 2
+    stu1_res = client.post("/api/users", json={
+        "name": "Waitlist Stu 1", "email": "wait_stu1@campus.edu", "password": "p", "role": "student"
+    })
+    student1_id = stu1_res.get_json()["user_id"]
+    stu1_headers = get_auth_headers(student1_id, "student", "Waitlist Stu 1", "wait_stu1@campus.edu")
+
+    stu2_res = client.post("/api/users", json={
+        "name": "Waitlist Stu 2", "email": "wait_stu2@campus.edu", "password": "p", "role": "student"
+    })
+    student2_id = stu2_res.get_json()["user_id"]
+    stu2_headers = get_auth_headers(student2_id, "student", "Waitlist Stu 2", "wait_stu2@campus.edu")
+
+    # Create event with capacity = 1
+    event_res = client.post("/api/events", json={
+        "title": "One Spot Workshop",
+        "description": "Cap 1",
+        "event_date": "2026-11-10",
+        "event_time": "11:00:00",
+        "location": "Room 5",
+        "capacity": 1,
+        "organizer_id": organizer_id
+    }, headers=org_headers)
+    event_id = event_res.get_json()["event_id"]
+
+    # Student 1 RSVPs -> Registered
+    res1 = client.post("/api/rsvps", json={"user_id": student1_id, "event_id": event_id}, headers=stu1_headers)
+    assert res1.get_json()["rsvp_status"] == "Registered"
+    rsvp1_id = res1.get_json()["rsvp_id"]
+
+    # Student 2 RSVPs -> Waitlisted
+    res2 = client.post("/api/rsvps", json={"user_id": student2_id, "event_id": event_id}, headers=stu2_headers)
+    assert res2.get_json()["rsvp_status"] == "Waitlisted"
+    rsvp2_id = res2.get_json()["rsvp_id"]
+
+    # Student 1 cancels RSVP -> Should automatically promote Student 2 to Registered
+    cancel_res = client.patch(f"/api/rsvps/{rsvp1_id}/cancel", headers=stu1_headers)
+    assert cancel_res.status_code == 200
+
+    # Verify Student 2 status is now Registered
+    rsvp2_check = client.get(f"/api/rsvps/{rsvp2_id}", headers=stu2_headers).get_json()
+    assert rsvp2_check["rsvp_status"] == "Registered"
+
+    # Verify Student 2 received waitlist promotion notification
+    notif_res = client.get(f"/api/users/{student2_id}/notifications", headers=stu2_headers)
+    assert notif_res.status_code == 200
+    notifs = notif_res.get_json()
+    assert len(notifs) == 1
+    assert "now Registered" in notifs[0]["message"]
+
