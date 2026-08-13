@@ -229,28 +229,95 @@ export async function renderEventDetails(mainContent, eventId) {
         </section>
         ${
           isEventOwner
-            ? `
-              <a
-                href="#/edit-event/${numericEventId}"
-                class="button button--primary"
-              >
-                Edit Event
-              </a>
-            `
+            ? apiEvent.status === "Canceled"
+              ? `
+                <button
+                  type="button"
+                  class="button button--secondary"
+                  disabled
+                >
+                  Event Canceled
+                </button>
+              `
+              : `
+                <div class="event-detail__actions">
+                  <a
+                    href="#/edit-event/${numericEventId}"
+                    class="button button--primary"
+                  >
+                    Edit Event
+                  </a>
+
+                  <button
+                    type="button"
+                    id="cancel-event-button"
+                    class="button button--danger"
+                  >
+                    Cancel Event
+                  </button>
+                </div>
+              `
             : `
-              <button
-                type="button"
-                id="rsvp-button"
-                class="button button--primary"
-                ${rsvpButtonIsDisabled ? "disabled" : ""}
-              >
-                ${escapeHtml(rsvpButtonText)}
-              </button>
-            `
+                <button
+                  type="button"
+                  id="rsvp-button"
+                  class="button button--primary"
+                  ${rsvpButtonIsDisabled ? "disabled" : ""}
+                >
+                  ${escapeHtml(rsvpButtonText)}
+                </button>
+              `
         }
       </section>
     `;
-    
+    const cancelEventButton = mainContent.querySelector(
+      "#cancel-event-button"
+    );
+
+    if (cancelEventButton) {
+      cancelEventButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(
+          "Are you sure you want to cancel this event? This action cannot be undone."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        cancelEventButton.disabled = true;
+        cancelEventButton.textContent = "Canceling...";
+
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:5000/api/events/${numericEventId}/cancel`,
+            {
+              method: "PATCH",
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              result.error || "Unable to cancel the event."
+            );
+          }
+
+          window.alert("Event canceled successfully.");
+
+          await renderEventDetails(
+            mainContent,
+            numericEventId
+          );
+        } catch (error) {
+          window.alert(error.message);
+
+          cancelEventButton.disabled = false;
+          cancelEventButton.textContent = "Cancel Event";
+        }
+      });
+    }
+
     const rsvpButton = mainContent.querySelector("#rsvp-button");
 
     if (

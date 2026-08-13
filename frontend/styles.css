@@ -188,6 +188,26 @@ a:hover {
   color: var(--color-surface);
 }
 
+button.button--danger {
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #ffffff;
+}
+
+button.button--danger:hover,
+button.button--danger:focus {
+  background-color: #7f1515;
+  border-color: #7f1515;
+  color: #ffffff;
+}
+
+.event-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
 .button:disabled,
 .button[aria-disabled="true"] {
   cursor: not-allowed;
@@ -844,6 +864,15 @@ a:hover {
   .event-details .button {
     width: 100%;
   }
+  .event-detail__actions {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.event-detail__actions .button {
+  text-align: center;
+  width: 100%;
+}
 }
 
 .event-not-found {
