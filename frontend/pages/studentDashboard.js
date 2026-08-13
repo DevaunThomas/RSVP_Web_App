@@ -186,7 +186,10 @@ export async function renderStudentDashboard(mainContent) {
                                 </a>
 
                                 ${
-                                  rsvp.rsvp_status === "Registered"
+                                  [
+                                    "Registered",
+                                    "Waitlisted",
+                                  ].includes(rsvp.rsvp_status)
                                     ? `
                                       <button
                                         class="button button--secondary cancel-rsvp-button"

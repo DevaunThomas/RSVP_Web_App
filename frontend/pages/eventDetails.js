@@ -95,6 +95,29 @@ export async function renderEventDetails(mainContent, eventId) {
     }
 
     const apiEvent = await response.json();
+    let existingRsvp = null;
+
+    if (
+      currentUser &&
+      currentUser.role === "student"
+    ) {
+      const rsvpsResponse = await fetch(
+        `http://127.0.0.1:5000/api/users/${currentUser.user_id}/rsvps`
+      );
+
+      if (!rsvpsResponse.ok) {
+        throw new Error(
+          "Failed to check your RSVP status."
+        );
+      }
+
+      const userRsvps = await rsvpsResponse.json();
+
+      existingRsvp = userRsvps.find(
+        (rsvp) =>
+          Number(rsvp.event_id) === numericEventId
+      ) || null;
+    }
 
     const event = {
       id: apiEvent.event_id,
@@ -117,11 +140,31 @@ export async function renderEventDetails(mainContent, eventId) {
       0
     );
 
-    const isUnavailable =
+    const isFull =
       event.status === "full" ||
-      event.status === "canceled" ||
-      event.status === "past" ||
       remainingSpots === 0;
+
+    const isUnavailable =
+      event.status === "canceled" ||
+      event.status === "past";
+
+      const activeRsvpStatus = [
+        "Registered",
+        "Waitlisted",
+      ].includes(existingRsvp?.rsvp_status)
+        ? existingRsvp.rsvp_status
+        : null;
+
+      const rsvpButtonIsDisabled =
+        isUnavailable || Boolean(activeRsvpStatus);
+
+      const rsvpButtonText =
+        activeRsvpStatus ||
+        (isUnavailable
+          ? "RSVP Unavailable"
+          : isFull
+            ? "Join Waitlist"
+            : "RSVP");
 
     const eventTime = event.endTime
       ? `${formatEventTime(event.startTime)} – ${formatEventTime(
@@ -179,14 +222,13 @@ export async function renderEventDetails(mainContent, eventId) {
             ${remainingSpots}
           </p>
         </section>
-
         <button
           type="button"
           id="rsvp-button"
           class="button button--primary"
-          ${isUnavailable ? "disabled" : ""}
+          ${rsvpButtonIsDisabled ? "disabled" : ""}
         >
-          ${isUnavailable ? "RSVP Unavailable" : "RSVP"}
+          ${escapeHtml(rsvpButtonText)}
         </button>
       </section>
     `;
@@ -196,6 +238,7 @@ export async function renderEventDetails(mainContent, eventId) {
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       currentUser &&
       currentUser.role === "student"
     ) {
@@ -237,7 +280,9 @@ export async function renderEventDetails(mainContent, eventId) {
           console.error("Failed to create RSVP.", error);
 
           rsvpButton.disabled = false;
-          rsvpButton.textContent = "RSVP";
+          rsvpButton.textContent = isFull
+            ? "Join Waitlist"
+            : "RSVP";
         }
       });
     }
@@ -245,6 +290,7 @@ export async function renderEventDetails(mainContent, eventId) {
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       !currentUser
     ) {
       rsvpButton.textContent = "Log in to RSVP";
@@ -257,6 +303,7 @@ export async function renderEventDetails(mainContent, eventId) {
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       currentUser &&
       currentUser.role !== "student"
     ) {
