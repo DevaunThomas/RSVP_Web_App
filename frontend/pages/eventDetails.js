@@ -229,8 +229,16 @@ export async function renderEventDetails(mainContent, eventId) {
         </section>
         ${
           isEventOwner
-            ? apiEvent.status === "Canceled"
-              ? `
+          ? apiEvent.status === "Canceled"
+            ? `
+              <div class="event-detail__actions">
+                <a
+                  href="#/manage-attendees/${numericEventId}"
+                  class="button button--primary"
+                >
+                  View Attendees
+                </a>
+
                 <button
                   type="button"
                   class="button button--secondary"
@@ -238,35 +246,43 @@ export async function renderEventDetails(mainContent, eventId) {
                 >
                   Event Canceled
                 </button>
-              `
-              : `
-                <div class="event-detail__actions">
-                  <a
-                    href="#/edit-event/${numericEventId}"
-                    class="button button--primary"
-                  >
-                    Edit Event
-                  </a>
-
-                  <button
-                    type="button"
-                    id="cancel-event-button"
-                    class="button button--danger"
-                  >
-                    Cancel Event
-                  </button>
-                </div>
-              `
+              </div>
+            `
             : `
+              <div class="event-detail__actions">
+                <a
+                  href="#/edit-event/${numericEventId}"
+                  class="button button--primary"
+                >
+                  Edit Event
+                </a>
+
+                <a
+                  href="#/manage-attendees/${numericEventId}"
+                  class="button button--secondary"
+                >
+                  Manage Attendees
+                </a>
+
                 <button
                   type="button"
-                  id="rsvp-button"
-                  class="button button--primary"
-                  ${rsvpButtonIsDisabled ? "disabled" : ""}
+                  id="cancel-event-button"
+                  class="button button--danger"
                 >
-                  ${escapeHtml(rsvpButtonText)}
+                  Cancel Event
                 </button>
-              `
+              </div>
+            `
+          : `
+              <button
+                type="button"
+                id="rsvp-button"
+                class="button button--primary"
+                ${rsvpButtonIsDisabled ? "disabled" : ""}
+              >
+                ${escapeHtml(rsvpButtonText)}
+              </button>
+            `
         }
       </section>
     `;

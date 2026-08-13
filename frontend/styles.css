@@ -1404,3 +1404,173 @@ button.button--danger:focus {
   background: #fde8e8;
   color: #b42318;
 }
+
+.attendee-management {
+  background-color: var(--color-white);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem rgb(0 39 76 / 8%);
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 2rem;
+}
+
+.attendee-management__header {
+  align-items: flex-start;
+  border-bottom: 3px solid var(--color-maize);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.attendee-management__header h1 {
+  color: var(--color-navy);
+  margin: 0 0 0.5rem;
+}
+
+.attendee-management__header h2 {
+  margin: 0 0 0.5rem;
+}
+
+.attendee-management__header p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.attendee-summary {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 2rem 0;
+}
+
+.attendee-summary__card {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.attendee-summary__card span {
+  color: var(--color-text-muted);
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.attendee-summary__card strong {
+  color: var(--color-navy);
+  font-size: 2rem;
+}
+
+.attendee-table-wrapper {
+  overflow-x: auto;
+}
+
+.attendee-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.attendee-table th,
+.attendee-table td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.attendee-table th {
+  background-color: var(--color-background);
+  color: var(--color-navy);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.attendee-table td:last-child {
+  white-space: nowrap;
+}
+
+.attendee-table .button {
+  min-width: 9rem;
+}
+
+.attendee-table__not-eligible {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.status-badge--registered,
+.status-badge--attended {
+  background-color: #e2f4e8;
+  color: #176b38;
+}
+
+.status-badge--waitlisted {
+  background-color: #fff1cc;
+  color: #855d00;
+}
+
+.status-badge--not-attended {
+  background-color: #edf0f3;
+  color: #4f5b66;
+}
+
+@media (max-width: 768px) {
+  .attendee-management {
+    border-radius: 0;
+    margin: 0;
+    padding: 1.25rem;
+  }
+
+  .attendee-management__header {
+    flex-direction: column;
+  }
+
+  .attendee-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .attendee-table,
+  .attendee-table tbody,
+  .attendee-table tr,
+  .attendee-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .attendee-table thead {
+    display: none;
+  }
+
+  .attendee-table tr {
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+  }
+
+  .attendee-table td {
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .attendee-table td::before {
+    color: var(--color-navy);
+    content: attr(data-label);
+    font-weight: 700;
+  }
+
+  .attendee-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .attendee-table .button {
+    min-width: auto;
+  }
+}

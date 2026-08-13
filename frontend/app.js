@@ -8,6 +8,7 @@ import { renderStudentDashboard } from "./pages/studentDashboard.js";
 import { renderOrganizerDashboard } from "./pages/organizerDashboard.js";
 import { renderCreateEvent } from "./pages/createEvent.js";
 import { renderEditEvent } from "./pages/editEvent.js";
+import { renderManageAttendees } from "./pages/manageAttendees.js";
 
 const app = document.getElementById("app");
 
@@ -51,6 +52,16 @@ function renderCurrentPage(mainContent) {
     const eventId = hash.split("/").pop();
 
     renderEditEvent(mainContent, eventId);
+    return;
+  }
+
+  if (
+    hash.startsWith("#/manage-attendees/") ||
+    hash.startsWith("#manage-attendees/")
+  ) {
+    const eventId = hash.split("/").pop();
+
+    renderManageAttendees(mainContent, eventId);
     return;
   }
   
