@@ -150,10 +150,10 @@ export function renderCreateEvent(mainContent) {
     </section>
   `;
 
-  initializeCreateEventForm();
+  initializeCreateEventForm(currentUser);
 }
 
-function initializeCreateEventForm() {
+function initializeCreateEventForm(currentUser) {
   const form = document.getElementById("create-event-form");
 
   const titleInput = document.getElementById("event-title");
