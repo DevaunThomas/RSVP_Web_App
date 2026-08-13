@@ -1,26 +1,33 @@
 import sqlite3
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from models.event import Event
 from models.rsvp import RSVP
 from models.user import User
+from services.auth_service import token_required
 
 
 rsvp_routes = Blueprint("rsvp_routes", __name__)
 
 
 @rsvp_routes.post("/rsvps")
+@token_required
 def create_rsvp():
     data = request.get_json(silent=True) or {}
 
-    if data.get("user_id") is None or data.get("event_id") is None:
+    user_id = data.get("user_id", g.current_user["user_id"])
+    event_id = data.get("event_id")
+
+    if event_id is None:
         return jsonify({
             "error": "user_id and event_id are required"
         }), 400
 
-    user_id = data["user_id"]
-    event_id = data["event_id"]
+    if g.current_user["user_id"] != user_id and g.current_user.get("role") != "organizer":
+        return jsonify({
+            "error": "Unauthorized to create an RSVP for another user"
+        }), 403
 
     user = User.get_by_id(user_id)
     event = Event.get_by_id(event_id)
@@ -93,6 +100,7 @@ def create_rsvp():
 
 
 @rsvp_routes.get("/rsvps/<int:rsvp_id>")
+@token_required
 def get_rsvp(rsvp_id: int):
     rsvp = RSVP.get_by_id(rsvp_id)
 
@@ -103,14 +111,19 @@ def get_rsvp(rsvp_id: int):
 
 
 @rsvp_routes.get("/users/<int:user_id>/rsvps")
+@token_required
 def get_user_rsvps(user_id: int):
     if not User.get_by_id(user_id):
         return jsonify({"error": "User not found"}), 404
+
+    if g.current_user["user_id"] != user_id and g.current_user.get("role") != "organizer":
+        return jsonify({"error": "Unauthorized to view these RSVPs"}), 403
 
     return jsonify(RSVP.get_for_user(user_id)), 200
 
 
 @rsvp_routes.get("/events/<int:event_id>/rsvps")
+@token_required
 def get_event_rsvps(event_id: int):
     if not Event.get_by_id(event_id):
         return jsonify({"error": "Event not found"}), 404
@@ -119,11 +132,15 @@ def get_event_rsvps(event_id: int):
 
 
 @rsvp_routes.patch("/rsvps/<int:rsvp_id>")
+@token_required
 def update_rsvp(rsvp_id: int):
     rsvp = RSVP.get_by_id(rsvp_id)
 
     if not rsvp:
         return jsonify({"error": "RSVP not found"}), 404
+
+    if rsvp["user_id"] != g.current_user["user_id"] and g.current_user.get("role") != "organizer":
+        return jsonify({"error": "Unauthorized to update this RSVP"}), 403
 
     data = request.get_json(silent=True) or {}
     rsvp_status = data.get("rsvp_status")
@@ -142,9 +159,15 @@ def update_rsvp(rsvp_id: int):
 
 
 @rsvp_routes.patch("/rsvps/<int:rsvp_id>/cancel")
+@token_required
 def cancel_rsvp(rsvp_id: int):
-    if not RSVP.get_by_id(rsvp_id):
+    rsvp = RSVP.get_by_id(rsvp_id)
+
+    if not rsvp:
         return jsonify({"error": "RSVP not found"}), 404
+
+    if rsvp["user_id"] != g.current_user["user_id"] and g.current_user.get("role") != "organizer":
+        return jsonify({"error": "Unauthorized to cancel this RSVP"}), 403
 
     RSVP.update_status(rsvp_id, "Canceled")
 
@@ -154,9 +177,15 @@ def cancel_rsvp(rsvp_id: int):
 
 
 @rsvp_routes.delete("/rsvps/<int:rsvp_id>")
+@token_required
 def delete_rsvp(rsvp_id: int):
-    if not RSVP.get_by_id(rsvp_id):
+    rsvp = RSVP.get_by_id(rsvp_id)
+
+    if not rsvp:
         return jsonify({"error": "RSVP not found"}), 404
+
+    if rsvp["user_id"] != g.current_user["user_id"] and g.current_user.get("role") != "organizer":
+        return jsonify({"error": "Unauthorized to delete this RSVP"}), 403
 
     RSVP.delete(rsvp_id)
 
