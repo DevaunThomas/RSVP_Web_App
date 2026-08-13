@@ -135,6 +135,11 @@ export async function renderEventDetails(mainContent, eventId) {
 
     event.status = resolveEventStatus(event);
 
+    const isEventOwner =
+      currentUser?.role === "organizer" &&
+      Number(apiEvent.organizer_id) ===
+        Number(currentUser.user_id);
+
     const remainingSpots = Math.max(
       event.capacity - event.rsvpCount,
       0
@@ -222,14 +227,27 @@ export async function renderEventDetails(mainContent, eventId) {
             ${remainingSpots}
           </p>
         </section>
-        <button
-          type="button"
-          id="rsvp-button"
-          class="button button--primary"
-          ${rsvpButtonIsDisabled ? "disabled" : ""}
-        >
-          ${escapeHtml(rsvpButtonText)}
-        </button>
+        ${
+          isEventOwner
+            ? `
+              <a
+                href="#/edit-event/${numericEventId}"
+                class="button button--primary"
+              >
+                Edit Event
+              </a>
+            `
+            : `
+              <button
+                type="button"
+                id="rsvp-button"
+                class="button button--primary"
+                ${rsvpButtonIsDisabled ? "disabled" : ""}
+              >
+                ${escapeHtml(rsvpButtonText)}
+              </button>
+            `
+        }
       </section>
     `;
     
