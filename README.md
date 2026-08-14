@@ -1,65 +1,209 @@
-# CIS_376_RSVP_App
-An app developed for CIS 376 that will handle Event Planning and RSVPs.
+# Campus Event Planning & RSVP App
+A web application developed for CIS 376 Software Engineering II. The application allows students to discover campus events, submit RSVPs, join waitlists, receive notifications, and view attendance history. Organizers can create and manage events, review attendees, and record attendance.
 
-App will be developed in Visual Studio Code. 
-Frontend will be written in HTML, CSS, or JavaScript.
-Backend will be written in Python with a Django framework to handle event creation, RSVP processing, user accounts, and organizer features.
-SQLite database will store event details, user information, RSVP records, attendance status, and notification data.
+## Features
 
-## Before You Begin (PLEASE READ):
-Please create your own branch with your name as the branch name. This will be where you make your changes and edits. Only changes that are approved by the group will be committed to the main branch. This will prevent people working on top of eachother and will give us updated starting points in case a branch breaks and someone needs to repull everything. If multiple people are working on a certain part (backend or frontend), please communicate with each other so that your changes are working together. Lastly, any updates you make to your branch should be shared in the groupchat so all members are up-to-date with each other.
+### Students
+- Create an account and log in
+- Browse and search upcoming events
+- View event details
+- RSVP or join an event waitlist
+- Cancel an RSVP
+- View RSVP and attendance history
+- Receive event updates, reminders, cancellations, and waitlist notifications
 
-## To run program:
-From the root folder, use command: .\start.ps1
-A new powershell window may open. Leave it open as it has the backend running there.
+### Organizers
+- Create an account and log in
+- Create, edit, and cancel events
+- View events on the organizer dashboard
+- Review registered and waitlisted attendees
+- Check attendees in
+- Monitor recent RSVPs
 
-## App Structure:
+## Technologies
+- **Frontend:** HTML, CSS, and JavaScript
+- **Backend:** Python and Flask
+- **Database:** SQLite
+- **Authentication:** JSON Web Tokens
+- **Testing:** Pytest
 
+## Requirements
+Before running the application, install:
+- Python 3.9 or newer
+- Git
+- A modern web browser
+
+Node.js & npm aren't required.
+
+## Initial Setup
+Clone the repository & enter the project directory:
+
+```bash
+git clone https://github.com/DevaunThomas/CIS_376_RSVP_App.git
+cd CIS_376_RSVP_App
 ```
-campus-event-rsvp-app/
-│
+
+Create a virtual environment.
+
+### macOS or Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Windows PowerShell
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the required Python packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Application
+The frontend & backend must run at the same time. Keep both terminal windows open while using the application.
+
+### Windows Quick Start
+Activate the virtual environment from the project root, then run:
+
+```powershell
+.\start.ps1
+```
+
+This script:
+1. Starts the Flask backend on port `5000`
+2. Starts the frontend server on port `5500`
+3. Opens the application in the default browser
+
+If the browser doesn't open automatically, visit:
+
+```text
+http://localhost:5500
+```
+
+### macOS or Linux
+Open a terminal in the project root & activate the virtual environment:
+
+```bash
+source .venv/bin/activate
+```
+
+Start the backend:
+
+```bash
+cd backend
+python app.py
+```
+
+Leave that terminal open.
+
+Open a second terminal, return to the project folder, & start the frontend:
+
+```bash
+cd frontend
+python3 -m http.server 5500
+```
+
+Open the application at:
+
+```text
+http://localhost:5500
+```
+
+## Manual Windows Start
+
+If `start.ps1` cannot be used, start each server manually.
+
+In the first PowerShell window:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+cd backend
+python app.py
+```
+
+In a second PowerShell window:
+
+```powershell
+cd frontend
+python -m http.server 5500
+```
+
+Then visit:
+
+```text
+http://localhost:5500
+```
+
+## Stopping the Application
+
+Press `Ctrl+C` in each terminal running a server.
+
+If `start.ps1` opened separate PowerShell windows, close both server windows when finished.
+
+## Important Notes
+- Don't open `frontend/index.html` directly from the file system.
+- Always access the frontend through `http://localhost:5500`.
+- The backend must be running for login, registration, events, RSVPs, attendance, and notifications to work.
+- The SQLite database is stored at `backend/campus_events.db`.
+- New users can create student or organizer accounts from the registration page.
+- The frontend automatically connects to `http://127.0.0.1:5000/api` during local development.
+
+## Branch Workflow
+
+Create a personal branch before making changes:
+
+```bash
+git checkout -b YourBranchName
+```
+
+Commit changes to your own branch & share completed updates with the team. Only reviewed & approved changes should be merged into `main`.
+
+## Project Structure
+
+```text
+CIS_376_RSVP_App/
+├── backend/
+│   ├── app.py
+│   ├── config.py
+│   ├── database.py
+│   ├── campus_events.db
+│   ├── schema.sql
+│   ├── models/
+│   │   ├── attendance.py
+│   │   ├── event.py
+│   │   ├── notification.py
+│   │   ├── rsvp.py
+│   │   └── user.py
+│   ├── routes/
+│   │   ├── attendance_routes.py
+│   │   ├── event_routes.py
+│   │   ├── notification_routes.py
+│   │   ├── rsvp_routes.py
+│   │   └── user_routes.py
+│   ├── services/
+│   │   ├── auth_service.py
+│   │   ├── limiter.py
+│   │   ├── notification_service.py
+│   │   ├── reminder_service.py
+│   │   └── validation_service.py
+│   └── tests/
 ├── frontend/
 │   ├── index.html
 │   ├── styles.css
 │   ├── app.js
+│   ├── config.js
 │   ├── assets/
-│   │   └── um-dearborn-logo.webp
-│   │
+│   ├── components/
+│   ├── data/
 │   ├── pages/
-│   │   ├── createEvent.js
-│   │   ├── eventDetails.js
-│   │   ├── events.js
-│   │   ├── login.js
-│   │   ├── organizerDashboard.js
-│   │   ├── register.js
-│   │   ├── rsvp.js
-│   │   └── studentDashboard.js
-│   │
-│   └── components/
-│       ├── eventCard.js
-│       ├── footer.js
-│       ├── navbar.js
-│       └── rsvpButton.js
-│
-├── backend/
-│   ├── app.py
-│   ├── routes/
-│   │   ├── event_routes.py
-│   │   ├── rsvp_routes.py
-│   │   └── user_routes.py
-│   │
-│   ├── models/
-│   │   ├── event.py
-│   │   ├── user.py
-│   │   └── rsvp.py
-│   │
-│   └── services/
-│       ├── notification_service.py
-│       └── reminder_service.py
-│
-├── database/
-│   └── campus_events.db
-│
-├── README.md
-└── requirements.txt
+│   └── utils/
+├── requirements.txt
+├── start.ps1
+└── README.md
 ```
