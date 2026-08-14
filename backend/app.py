@@ -3,10 +3,12 @@ from flask_cors import CORS
 
 from config import Config
 from database import DatabaseHelper
+from routes.attendance_routes import attendance_routes
 from routes.event_routes import event_routes
+from routes.notification_routes import notification_routes
 from routes.rsvp_routes import rsvp_routes
 from routes.user_routes import user_routes
-from routes.attendance_routes import attendance_routes
+from services.reminder_service import ReminderService
 
 
 def create_app() -> Flask:
@@ -24,6 +26,10 @@ def create_app() -> Flask:
     app.register_blueprint(event_routes, url_prefix="/api")
     app.register_blueprint(rsvp_routes, url_prefix="/api")
     app.register_blueprint(attendance_routes, url_prefix="/api")
+    app.register_blueprint(notification_routes, url_prefix="/api")
+
+    # Initialize background reminder scheduler
+    ReminderService.init_scheduler(app)
 
     @app.get("/")
     def home():
