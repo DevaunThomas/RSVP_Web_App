@@ -1,4 +1,11 @@
-import { getCurrentUser, logout } from "../utils/session.js";
+import {
+  getCurrentUser,
+  logout,
+} from "../utils/session.js";
+
+import {
+  authenticatedFetch,
+} from "../utils/api.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -22,6 +29,20 @@ export function renderNavbar() {
 
   const authButtons = currentUser
     ? `
+      <a
+        class="navbar__link navbar__notifications-link"
+        href="#/notifications"
+        data-nav-route="notifications"
+        aria-label="Notifications"
+      >
+        Notifications
+
+        <span
+          id="notification-count-badge"
+          class="navbar__notification-badge"
+          hidden
+        ></span>
+      </a>
       <a
         class="navbar__link"
         href="${dashboardRoute}"
@@ -105,10 +126,67 @@ export function renderNavbar() {
   `;
 }
 
+export async function updateNotificationBadge() {
+  const currentUser = getCurrentUser();
+
+  const badge = document.getElementById(
+    "notification-count-badge"
+  );
+
+  const notificationLink = document.querySelector(
+    ".navbar__notifications-link"
+  );
+
+  if (!currentUser || !badge || !notificationLink) {
+    return;
+  }
+
+  try {
+    const response = await authenticatedFetch(
+      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/notifications/unread-count`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          "Unable to load the notification count."
+      );
+    }
+
+    const unreadCount =
+      Number(data.unread_count) || 0;
+
+    badge.textContent =
+      unreadCount > 99 ? "99+" : String(unreadCount);
+
+    badge.hidden = unreadCount === 0;
+
+    notificationLink.setAttribute(
+      "aria-label",
+      unreadCount === 0
+        ? "Notifications"
+        : `Notifications, ${unreadCount} unread`
+    );
+  } catch (error) {
+    console.error(
+      "Unable to update notification count.",
+      error
+    );
+
+    badge.hidden = true;
+  }
+}
+
 export function updateNavbarActiveState() {
+
   const route = window.location.hash
     .replace(/^#\/?/, "")
     .toLowerCase();
+
+  const isNotificationsRoute =
+    route === "notifications";
 
   const dashboardRoutes = [
     "student-dashboard",
@@ -130,6 +208,8 @@ export function updateNavbarActiveState() {
 
   if (isDashboardRoute) {
     activeRoute = "dashboard";
+  } else if (isNotificationsRoute) {
+    activeRoute = "notifications";
   } else if (isEventsRoute) {
     activeRoute = "events";
   }
@@ -163,6 +243,7 @@ export function initializeNavbar() {
   if (logoutButton) {
     logoutButton.addEventListener("click", logout);
   }
+    updateNotificationBadge();
 
   if (!toggleButton || !navigationMenu) {
     return;

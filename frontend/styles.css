@@ -369,8 +369,14 @@ button.button--danger:focus {
   .navbar__actions {
     align-items: center;
     flex-direction: row;
-    gap: 0.5rem;
+    gap: 1.25rem;
   }
+
+  .navbar__actions > .navbar__link {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+  }
+
   .navbar__actions .button {
     width: auto;
   }
@@ -1622,5 +1628,195 @@ button.button--danger:focus {
   .attendance-history__item {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+.navbar__notifications-link {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.navbar__notification-badge {
+  align-items: center;
+  background-color: #b42318;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  justify-content: center;
+  line-height: 1;
+  min-height: 1.35rem;
+  min-width: 1.35rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.navbar__notification-badge[hidden] {
+  display: none;
+}
+
+.notifications-page {
+  background-color: var(--color-white);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.5rem rgb(0 39 76 / 8%);
+  margin: 2rem auto;
+  max-width: 1000px;
+  padding: 2rem;
+}
+
+.notifications-page__header {
+  align-items: center;
+  border-bottom: 3px solid var(--color-maize);
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+.notifications-page__header h1 {
+  color: var(--color-navy);
+  margin: 0 0 0.5rem;
+}
+
+.notifications-page__header p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.notification-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.notification-list__empty {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.notification-list__empty h2 {
+  color: var(--color-navy);
+  margin: 0 0 0.5rem;
+}
+
+.notification-list__empty p {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.notification-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.notification-card--unread {
+  background-color: #f7fbff;
+  border-left: 0.35rem solid var(--color-maize);
+}
+
+.notification-card__header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.notification-card__header time {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.notification-card h2 {
+  color: var(--color-navy);
+  margin: 0 0 0.5rem;
+}
+
+.notification-card > p {
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.notification-card__footer {
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+}
+
+.notification-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.notification-type {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.35rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.notification-type--update {
+  background-color: #e8f1fb;
+  color: #174f7c;
+}
+
+.notification-type--cancellation {
+  background-color: #fde8e7;
+  color: #9c2f28;
+}
+
+.notification-type--reminder {
+  background-color: #fff1cc;
+  color: #755400;
+}
+
+.notification-type--general {
+  background-color: #edf0f3;
+  color: #4f5b66;
+}
+
+@media (max-width: 768px) {
+  .notifications-page {
+    border-radius: 0;
+    margin: 0;
+    padding: 1.25rem;
+  }
+
+  .notifications-page__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .notifications-page__header .button {
+    width: 100%;
+  }
+
+  .notification-card__header,
+  .notification-card__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .notification-card__actions {
+    width: 100%;
+  }
+
+  .notification-card__footer > .button,
+  .notification-card__actions .button {
+    width: 100%;
   }
 }

@@ -1,13 +1,79 @@
-import { renderNavbar, initializeNavbar, updateNavbarActiveState } from "./components/navbar.js";import { renderFooter } from "./components/footer.js";
-import { renderEventsPage } from "./pages/events.js";
-import { renderEventDetails } from "./pages/eventDetails.js";
+import {
+  renderNavbar,
+  initializeNavbar,
+  updateNavbarActiveState,
+} from "./components/navbar.js";
+
+import {
+  renderFooter,
+} from "./components/footer.js";
+
+import {
+  renderEventsPage,
+} from "./pages/events.js";
+
+import {
+  renderEventDetails,
+} from "./pages/eventDetails.js";
+
 import { renderLogin } from "./pages/login.js";
 import { renderRegister } from "./pages/register.js";
-import { renderStudentDashboard } from "./pages/studentDashboard.js";
-import { renderOrganizerDashboard } from "./pages/organizerDashboard.js";
-import { renderCreateEvent } from "./pages/createEvent.js";
-import { renderEditEvent } from "./pages/editEvent.js";
-import { renderManageAttendees } from "./pages/manageAttendees.js";
+
+import {
+  renderStudentDashboard,
+} from "./pages/studentDashboard.js";
+
+import {
+  renderOrganizerDashboard,
+} from "./pages/organizerDashboard.js";
+
+import {
+  renderCreateEvent,
+} from "./pages/createEvent.js";
+
+import {
+  renderEditEvent,
+} from "./pages/editEvent.js";
+
+import {
+  renderManageAttendees,
+} from "./pages/manageAttendees.js";
+
+import {
+  renderNotifications,
+} from "./pages/notifications.js";
+
+export async function authenticatedFetch(
+  url,
+  options = {}
+) {
+  const token = getAuthToken();
+
+  if (!token) {
+    logout();
+    throw new Error(
+      "Your session has ended. Please sign in again."
+    );
+  }
+
+  const headers = new Headers(options.headers || {});
+
+  headers.set("Authorization", `Bearer ${token}`);
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 401) {
+    logout();
+    throw new Error(
+      "Your session has expired. Please sign in again."
+    );
+  }
+
+  return response;
+}
 
 const app = document.getElementById("app");
 
@@ -23,6 +89,14 @@ function renderCurrentPage(mainContent) {
 
   if (hash === "#/register" || hash === "#register") {
     renderRegister(mainContent);
+    return;
+  }
+
+  if (
+    hash === "#/notifications" ||
+    hash === "#notifications"
+  ) {
+    renderNotifications(mainContent);
     return;
   }
 

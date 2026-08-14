@@ -98,7 +98,10 @@ export async function renderStudentDashboard(mainContent) {
 
     const rsvps = await response.json();
     const uncanceledRsvps = rsvps.filter(
-      (rsvp) => rsvp.rsvp_status !== "Canceled"
+      (rsvp) =>
+        rsvp.rsvp_status !== "Canceled" &&
+        String(rsvp.event_status).toLowerCase() !==
+          "canceled"
     );
 
     const currentDateTime = new Date();
