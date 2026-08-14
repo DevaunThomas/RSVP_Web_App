@@ -96,10 +96,78 @@ export async function renderStudentDashboard(mainContent) {
     }
 
     const rsvps = await response.json();
-
-    const activeRsvps = rsvps.filter(
+    const uncanceledRsvps = rsvps.filter(
       (rsvp) => rsvp.rsvp_status !== "Canceled"
     );
+
+    const currentDateTime = new Date();
+
+    const activeRsvps = uncanceledRsvps.filter((rsvp) => {
+      const eventDateTime = new Date(
+        `${rsvp.event_date}T${
+          rsvp.event_time || "00:00"
+        }`
+      );
+
+      return eventDateTime >= currentDateTime;
+    });
+
+    const attendanceResults = await Promise.all(
+      uncanceledRsvps.map(async (rsvp) => {
+        const attendanceResponse = await fetch(
+          `http://127.0.0.1:5000/api/events/${rsvp.event_id}/attendance`
+        );
+
+        if (!attendanceResponse.ok) {
+          throw new Error(
+            `Failed to load attendance for ${rsvp.title}.`
+          );
+        }
+
+        const attendanceRecords =
+          await attendanceResponse.json();
+
+        const studentAttendance = attendanceRecords.find(
+          (record) =>
+            Number(record.user_id) ===
+            Number(currentUser.user_id)
+        );
+
+        return {
+          ...rsvp,
+          attended: Boolean(studentAttendance?.attended),
+        };
+      })
+    );
+
+    const attendanceHistory = attendanceResults
+      .filter((rsvp) => {
+        if (rsvp.rsvp_status !== "Registered") {
+          return false;
+        }
+
+        const eventDateTime = new Date(
+          `${rsvp.event_date}T${
+            rsvp.event_time || "00:00"
+          }`
+        );
+
+        return eventDateTime < currentDateTime;
+      })
+      .sort(
+        (firstRsvp, secondRsvp) =>
+          new Date(
+            `${secondRsvp.event_date}T${
+              secondRsvp.event_time || "00:00"
+            }`
+          ) -
+          new Date(
+            `${firstRsvp.event_date}T${
+              firstRsvp.event_time || "00:00"
+            }`
+          )
+      );
+
 
     mainContent.innerHTML = `
       <section class="dashboard-page">
@@ -207,7 +275,59 @@ export async function renderStudentDashboard(mainContent) {
                         `
                       )
                       .join("")
-                  : "<p>You haven't RSVP'd to any events yet.</p>"
+                  : "<p>You have no upcoming RSVPs.</p>"
+              }
+            </div>
+          </section>
+
+          <section class="dashboard-card">
+            <div class="dashboard-card__header">
+              <h2>Attendance History</h2>
+            </div>
+
+            <div class="attendance-history">
+              ${
+                attendanceHistory.length > 0
+                  ? attendanceHistory
+                      .map(
+                        (record) => `
+                          <article class="attendance-history__item">
+                            <div>
+                              <h3>${record.title}</h3>
+
+                              <p>
+                                ${formatEventDate(record.event_date)}
+                                at
+                                ${formatEventTime(record.event_time)}
+                              </p>
+
+                              <p>${record.location}</p>
+                            </div>
+
+                            <span
+                              class="status-badge ${
+                                record.attended
+                                  ? "status-badge--attended"
+                                  : "status-badge--not-attended"
+                              }"
+                            >
+                              ${
+                                record.attended
+                                  ? "Attended"
+                                  : "Not Attended"
+                              }
+                            </span>
+                          </article>
+                        `
+                      )
+                      .join("")
+                  : `
+                    <div class="attendance-history__empty">
+                      <p>
+                        No completed events are available in your attendance history yet.
+                      </p>
+                    </div>
+                  `
               }
             </div>
           </section>

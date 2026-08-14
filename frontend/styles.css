@@ -1574,3 +1574,53 @@ button.button--danger:focus {
     min-width: auto;
   }
 }
+
+.attendance-history {
+  display: grid;
+  gap: 1rem;
+}
+
+.attendance-history__item {
+  align-items: center;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1.25rem;
+}
+
+.attendance-history__item h3 {
+  color: var(--color-navy);
+  margin: 0 0 0.5rem;
+}
+
+.attendance-history__item p {
+  color: var(--color-text-muted);
+  margin: 0.25rem 0;
+}
+
+.attendance-history__item .status-badge {
+  flex-shrink: 0;
+}
+
+.attendance-history__empty {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  color: var(--color-text-muted);
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.attendance-history__empty p {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .attendance-history__item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
