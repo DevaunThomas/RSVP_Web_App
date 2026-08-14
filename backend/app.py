@@ -8,6 +8,7 @@ from routes.event_routes import event_routes
 from routes.notification_routes import notification_routes
 from routes.rsvp_routes import rsvp_routes
 from routes.user_routes import user_routes
+from services.limiter import limiter
 from services.reminder_service import ReminderService
 
 
@@ -17,10 +18,19 @@ def create_app() -> Flask:
     # Apply configuration settings
     app.config.from_object(Config)
 
+    # Disable rate limits during testing
+    if app.config.get("TESTING") or app.config.get("FLASK_ENV") == "testing":
+        app.config["RATELIMIT_ENABLED"] = False
+        limiter.enabled = False
+
     # Allows the frontend to send requests to this backend.
     CORS(app)
 
     DatabaseHelper.init_db()
+
+    # Initialize rate limiter
+    limiter.init_app(app)
+
 
     app.register_blueprint(user_routes, url_prefix="/api")
     app.register_blueprint(event_routes, url_prefix="/api")

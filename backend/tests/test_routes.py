@@ -18,6 +18,7 @@ from models.user import User
 from models.event import Event
 from models.rsvp import RSVP
 from services.auth_service import generate_token
+from services.limiter import limiter
 from services.reminder_service import ReminderService
 
 
@@ -27,7 +28,10 @@ def app():
     DatabaseHelper.init_db()
 
     app = create_app()
+    app.config["RATELIMIT_ENABLED"] = False
+    limiter.enabled = False
     yield app
+
 
     # Clean up the test database file
     os.close(db_fd)
@@ -753,4 +757,55 @@ def test_waitlist_promotion_automation(client):
     notifs = notif_res.get_json()
     assert len(notifs) == 1
     assert "now Registered" in notifs[0]["message"]
+
+
+def test_input_validation_and_verification(client):
+    """Test email format validation and event date/time past-date validation."""
+    # 1. Reject invalid email format during user creation
+    res1 = client.post("/api/users", json={
+        "name": "Bad Email User",
+        "email": "invalid-email-format",
+        "password": "password123",
+        "role": "student"
+    })
+    assert res1.status_code == 400
+    assert "Invalid email format" in res1.get_json()["error"]
+
+    # 2. Reject invalid email format during login
+    res2 = client.post("/api/login", json={
+        "email": "not-an-email",
+        "password": "password123"
+    })
+    assert res2.status_code == 400
+    assert "Invalid email format" in res2.get_json()["error"]
+
+    # Create valid organizer for event validation tests
+    org_res = client.post("/api/users", json={
+        "name": "Val Org", "email": "val_org@campus.edu", "password": "p", "role": "organizer"
+    })
+    organizer_id = org_res.get_json()["user_id"]
+    org_headers = get_auth_headers(organizer_id, "organizer", "Val Org", "val_org@campus.edu")
+
+    # 3. Reject event with date in the past
+    res3 = client.post("/api/events", json={
+        "title": "Past Event",
+        "event_date": "2020-01-01",
+        "event_time": "12:00:00",
+        "location": "Old Hall",
+        "capacity": 10
+    }, headers=org_headers)
+    assert res3.status_code == 400
+    assert "cannot be in the past" in res3.get_json()["error"]
+
+    # 4. Reject event with malformed date format
+    res4 = client.post("/api/events", json={
+        "title": "Bad Date Event",
+        "event_date": "10-05-2026",
+        "event_time": "12:00:00",
+        "location": "Hall",
+        "capacity": 10
+    }, headers=org_headers)
+    assert res4.status_code == 400
+    assert "Invalid event_date format" in res4.get_json()["error"]
+
 

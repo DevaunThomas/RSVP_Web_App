@@ -6,6 +6,7 @@ from models.event import Event
 from models.user import User
 from services.auth_service import organizer_required, token_required
 from services.notification_service import NotificationService
+from services.validation_service import ValidationService
 
 
 event_routes = Blueprint("event_routes", __name__)
@@ -38,6 +39,14 @@ def create_event():
             "fields": missing_fields
         }), 400
 
+    # Validate date format and ensure it's not in the past
+    is_valid_dt, dt_error = ValidationService.validate_event_date_and_time(
+        data["event_date"],
+        data["event_time"]
+    )
+    if not is_valid_dt:
+        return jsonify({"error": dt_error}), 400
+
     organizer = User.get_by_id(organizer_id)
 
     if not organizer:
@@ -65,11 +74,11 @@ def create_event():
 
     try:
         event_id = Event.create(
-            title=data["title"].strip(),
-            description=data.get("description", "").strip(),
-            event_date=data["event_date"],
-            event_time=data["event_time"],
-            location=data["location"].strip(),
+            title=ValidationService.sanitize_string(data["title"]),
+            description=ValidationService.sanitize_string(data.get("description", ""), max_length=1000),
+            event_date=data["event_date"].strip(),
+            event_time=data["event_time"].strip(),
+            location=ValidationService.sanitize_string(data["location"]),
             capacity=capacity,
             organizer_id=organizer_id
         )
@@ -155,6 +164,14 @@ def update_event(event_id: int):
             "fields": missing_fields
         }), 400
 
+    # Validate date format and ensure it's not in the past
+    is_valid_dt, dt_error = ValidationService.validate_event_date_and_time(
+        data["event_date"],
+        data["event_time"]
+    )
+    if not is_valid_dt:
+        return jsonify({"error": dt_error}), 400
+
     try:
         capacity = int(data["capacity"])
 
@@ -174,11 +191,11 @@ def update_event(event_id: int):
 
     Event.update(
         event_id=event_id,
-        title=data["title"].strip(),
-        description=data.get("description", "").strip(),
-        event_date=data["event_date"],
-        event_time=data["event_time"],
-        location=data["location"].strip(),
+        title=ValidationService.sanitize_string(data["title"]),
+        description=ValidationService.sanitize_string(data.get("description", ""), max_length=1000),
+        event_date=data["event_date"].strip(),
+        event_time=data["event_time"].strip(),
+        location=ValidationService.sanitize_string(data["location"]),
         capacity=capacity,
         status=status
     )
