@@ -4,7 +4,6 @@ import {
   updateNotificationBadge,
 } from "../components/navbar.js";
 
-const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -84,7 +83,7 @@ export async function renderNotifications(mainContent) {
 
   try {
     const response = await authenticatedFetch(
-      `${API_BASE_URL}/users/${currentUser.user_id}/notifications`
+      `/users/${currentUser.user_id}/notifications`
     );
 
     const notifications = await response.json();
@@ -249,7 +248,7 @@ export async function renderNotifications(mainContent) {
       try {
         const markAllResponse =
           await authenticatedFetch(
-            `${API_BASE_URL}/users/${currentUser.user_id}/notifications/read-all`,
+            `/users/${currentUser.user_id}/notifications/read-all`,
             {
               method: "PATCH",
             }
@@ -289,7 +288,7 @@ export async function renderNotifications(mainContent) {
         try {
           const markReadResponse =
             await authenticatedFetch(
-              `${API_BASE_URL}/notifications/${notificationId}/read`,
+              `/notifications/${notificationId}/read`,
               {
                 method: "PATCH",
               }
@@ -338,7 +337,7 @@ export async function renderNotifications(mainContent) {
         try {
           const deleteResponse =
             await authenticatedFetch(
-              `${API_BASE_URL}/notifications/${notificationId}`,
+              `/notifications/${notificationId}`,
               {
                 method: "DELETE",
               }

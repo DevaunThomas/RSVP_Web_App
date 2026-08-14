@@ -274,7 +274,7 @@ function initializeCreateEventForm(currentUser) {
         organizer_id: currentUser.user_id
         };
         
-        authenticatedFetch("http://127.0.0.1:5000/api/events", {
+        authenticatedFetch("/events", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

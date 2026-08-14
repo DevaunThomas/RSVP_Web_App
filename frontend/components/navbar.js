@@ -143,7 +143,7 @@ export async function updateNotificationBadge() {
 
   try {
     const response = await authenticatedFetch(
-      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/notifications/unread-count`
+      `/users/${currentUser.user_id}/notifications/unread-count`
     );
 
     const data = await response.json();

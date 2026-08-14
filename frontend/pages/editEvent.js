@@ -66,8 +66,8 @@ export async function renderEditEvent(
   `;
 
   try {
-    const response = await fetch(
-      `http://127.0.0.1:5000/api/events/${numericEventId}`
+    const response = await authenticatedFetch(
+      `/events/${numericEventId}`
     );
 
     if (response.status === 404) {
@@ -406,7 +406,7 @@ function initializeEditEventForm(
 
     try {
       const response = await authenticatedFetch(
-        `http://127.0.0.1:5000/api/events/${eventId}`,
+        `/events/${eventId}`,
         {
           method: "PUT",
           headers: {

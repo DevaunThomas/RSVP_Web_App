@@ -1,7 +1,31 @@
 import { renderEventCard } from "../components/eventCard.js";
 import { getCurrentUser } from "../utils/session.js";
 import { resolveEventStatus } from "../utils/eventStatus.js";
-import { authenticatedFetch } from "../utils/api.js";
+import { apiFetch, authenticatedFetch } from "../utils/api.js";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getRsvpStatusClass(status) {
+  const normalizedStatus = String(status)
+    .toLowerCase();
+
+  const allowedStatuses = [
+    "registered",
+    "waitlisted",
+    "canceled",
+  ];
+
+  return allowedStatuses.includes(normalizedStatus)
+    ? normalizedStatus
+    : "unknown";
+}
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -53,9 +77,7 @@ export async function renderStudentDashboard(mainContent) {
 
   try {
     // Load all events
-    const eventsResponse = await fetch(
-      "http://127.0.0.1:5000/api/events"
-    );
+    const eventsResponse = await apiFetch("/events");
 
     if (!eventsResponse.ok) {
       throw new Error("Failed to load events.");
@@ -89,7 +111,7 @@ export async function renderStudentDashboard(mainContent) {
 
     // Load student's RSVPs
     const response = await authenticatedFetch(
-      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/rsvps`
+      `/users/${currentUser.user_id}/rsvps`
     );
 
     if (!response.ok) {
@@ -117,7 +139,7 @@ export async function renderStudentDashboard(mainContent) {
     });
 
     const attendanceResponse = await authenticatedFetch(
-      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/attendance`
+      `/users/${currentUser.user_id}/attendance`
     );
 
     if (!attendanceResponse.ok) {
@@ -177,7 +199,7 @@ export async function renderStudentDashboard(mainContent) {
           <h1>Student Dashboard</h1>
 
           <p>
-            Welcome back, ${currentUser.name}! Browse upcoming events and manage your RSVPs.
+            Welcome back, ${escapeHtml(currentUser.name)}! Browse upcoming events and manage your RSVPs.
           </p>
         </div>
 
@@ -213,7 +235,7 @@ export async function renderStudentDashboard(mainContent) {
                           <article class="rsvp-card">
                             <div class="rsvp-card__body">
                               <h3 class="rsvp-card__title">
-                                ${rsvp.title}
+                                ${escapeHtml(rsvp.title)}
                               </h3>
 
                               <dl class="rsvp-card__details">
@@ -229,16 +251,16 @@ export async function renderStudentDashboard(mainContent) {
 
                                 <div class="rsvp-card__detail">
                                   <dt>Location</dt>
-                                  <dd>${rsvp.location}</dd>
+                                  <dd>${escapeHtml(rsvp.location)}</dd>
                                 </div>
 
                                 <div class="rsvp-card__detail">
                                   <dt>Status</dt>
                                   <dd>
                                     <span
-                                      class="rsvp-status rsvp-status--${rsvp.rsvp_status.toLowerCase()}"
+                                      class="rsvp-status rsvp-status--${getRsvpStatusClass(rsvp.rsvp_status)}"
                                     >
-                                      ${rsvp.rsvp_status}
+                                      ${escapeHtml(rsvp.rsvp_status)}
                                     </span>
                                   </dd>
                                 </div>
@@ -249,7 +271,7 @@ export async function renderStudentDashboard(mainContent) {
                             <div class="rsvp-card__footer">
                               <div class="dashboard-list__actions">
                                 <a
-                                  href="#/event/${rsvp.event_id}"
+                                  href="#/event/${Number(rsvp.event_id)}"
                                   class="button button--primary"
                                 >
                                   View Event
@@ -264,7 +286,7 @@ export async function renderStudentDashboard(mainContent) {
                                       <button
                                         class="button button--secondary cancel-rsvp-button"
                                         type="button"
-                                        data-rsvp-id="${rsvp.rsvp_id}"
+                                        data-rsvp-id="${Number(rsvp.rsvp_id)}"
                                       >
                                         Cancel RSVP
                                       </button>
@@ -295,7 +317,7 @@ export async function renderStudentDashboard(mainContent) {
                         (record) => `
                           <article class="attendance-history__item">
                             <div>
-                              <h3>${record.title}</h3>
+                              <h3>${escapeHtml(record.title)}</h3>
 
                               <p>
                                 ${formatEventDate(record.event_date)}
@@ -303,7 +325,7 @@ export async function renderStudentDashboard(mainContent) {
                                 ${formatEventTime(record.event_time)}
                               </p>
 
-                              <p>${record.location}</p>
+                              <p>${escapeHtml(record.location)}</p>
                             </div>
 
                             <span
@@ -364,7 +386,7 @@ export async function renderStudentDashboard(mainContent) {
 
         try {
           const response = await authenticatedFetch(
-            `http://127.0.0.1:5000/api/rsvps/${rsvpId}/cancel`,
+            `/rsvps/${rsvpId}/cancel`,
             {
               method: "PATCH",
             }

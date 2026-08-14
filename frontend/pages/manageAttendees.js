@@ -1,6 +1,5 @@
 import { getCurrentUser } from "../utils/session.js";
 import { authenticatedFetch } from "../utils/api.js";
-const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -165,8 +164,8 @@ export async function renderManageAttendees(
   `;
 
   try {
-    const eventResponse = await fetch(
-      `${API_BASE_URL}/events/${numericEventId}`
+    const eventResponse = await authenticatedFetch(
+      `/events/${numericEventId}`
     );
 
     const event = await eventResponse.json();
@@ -192,10 +191,10 @@ export async function renderManageAttendees(
     const [rsvpResponse, attendanceResponse] =
       await Promise.all([
         authenticatedFetch(
-          `${API_BASE_URL}/events/${numericEventId}/rsvps`
+          `/events/${numericEventId}/rsvps`
         ),
         authenticatedFetch(
-          `${API_BASE_URL}/events/${numericEventId}/attendance`
+          `/events/${numericEventId}/attendance`
         ),
       ]);
 
@@ -363,7 +362,7 @@ export async function renderManageAttendees(
 
         try {
           const response = await authenticatedFetch(
-            `${API_BASE_URL}/events/${numericEventId}/attendance/${userId}`,
+            `/events/${numericEventId}/attendance/${userId}`,
             {
               method: "PATCH",
               headers: {

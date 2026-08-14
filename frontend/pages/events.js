@@ -1,9 +1,11 @@
 import {
-  renderEventCard }
-  from "../components/eventCard.js";
+  renderEventCard,
+} from "../components/eventCard.js";
+
+import { apiFetch } from "../utils/api.js";
 
 import {
-  resolveEventStatus
+  resolveEventStatus,
 } from "../utils/eventStatus.js";
 
 function sortEventsByDate(events) {
@@ -91,9 +93,7 @@ export async function renderEventsPage(container) {
   `;
 
   try {
-    const response = await fetch(
-      "http://127.0.0.1:5000/api/events"
-    );
+    const response = await apiFetch("/events");
 
     if (!response.ok) {
       throw new Error("Failed to load events.");

@@ -1,4 +1,6 @@
+import { apiFetch } from "../utils/api.js";
 import { saveSession } from "../utils/session.js";
+
 export function renderLogin(mainContent) {
   mainContent.innerHTML = `
     <section class="auth-page">
@@ -146,8 +148,8 @@ function initializeLoginForm() {
     }
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/login",
+      const response = await apiFetch(
+        "/login",
         {
           method: "POST",
           headers: {

@@ -68,7 +68,7 @@ export async function renderOrganizerDashboard(mainContent) {
 
   try {
     const eventsResponse = await authenticatedFetch(
-      `http://127.0.0.1:5000/api/organizers/${currentUser.user_id}/events`
+      `/organizers/${currentUser.user_id}/events`
     );
 
     if (!eventsResponse.ok) {
@@ -99,7 +99,7 @@ export async function renderOrganizerDashboard(mainContent) {
     const rsvpResponses = await Promise.all(
       apiEvents.map(async (event) => {
         const response = await authenticatedFetch(
-          `http://127.0.0.1:5000/api/events/${event.event_id}/rsvps`
+          `/events/${event.event_id}/rsvps`
         );
 
         if (!response.ok) {
