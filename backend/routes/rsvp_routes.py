@@ -6,9 +6,34 @@ from models.event import Event
 from models.rsvp import RSVP
 from models.user import User
 from services.auth_service import token_required
+from services.notification_service import NotificationService
 
 
 rsvp_routes = Blueprint("rsvp_routes", __name__)
+
+
+def process_waitlist_promotion(event_id: int):
+    """
+    Checks if an event has remaining capacity and promotes the earliest waitlisted attendee to Registered,
+    dispatching a notification to the promoted user.
+    """
+    event = Event.get_by_id(event_id)
+    if not event or event.get("status") == "Canceled":
+        return None
+
+    registered_count = Event.get_registered_count(event_id)
+    if registered_count < event["capacity"]:
+        next_waitlisted = RSVP.get_next_waitlisted(event_id)
+        if next_waitlisted:
+            RSVP.update_status(next_waitlisted["rsvp_id"], "Registered")
+            NotificationService.notify_waitlist_promotion(
+                user_id=next_waitlisted["user_id"],
+                event_id=event_id,
+                event_title=event["title"]
+            )
+            return next_waitlisted
+
+    return None
 
 
 @rsvp_routes.post("/rsvps")
@@ -150,7 +175,12 @@ def update_rsvp(rsvp_id: int):
             "error": "Invalid RSVP status"
         }), 400
 
+    old_status = rsvp["rsvp_status"]
     RSVP.update_status(rsvp_id, rsvp_status)
+
+    # If status changed from Registered to Canceled, trigger waitlist promotion
+    if old_status == "Registered" and rsvp_status == "Canceled":
+        process_waitlist_promotion(rsvp["event_id"])
 
     return jsonify({
         "message": "RSVP updated successfully",
@@ -169,7 +199,12 @@ def cancel_rsvp(rsvp_id: int):
     if rsvp["user_id"] != g.current_user["user_id"] and g.current_user.get("role") != "organizer":
         return jsonify({"error": "Unauthorized to cancel this RSVP"}), 403
 
+    old_status = rsvp["rsvp_status"]
     RSVP.update_status(rsvp_id, "Canceled")
+
+    # Trigger waitlist promotion if a Registered RSVP was canceled
+    if old_status == "Registered":
+        process_waitlist_promotion(rsvp["event_id"])
 
     return jsonify({
         "message": "RSVP canceled successfully"
@@ -187,7 +222,14 @@ def delete_rsvp(rsvp_id: int):
     if rsvp["user_id"] != g.current_user["user_id"] and g.current_user.get("role") != "organizer":
         return jsonify({"error": "Unauthorized to delete this RSVP"}), 403
 
+    old_status = rsvp["rsvp_status"]
+    event_id = rsvp["event_id"]
+
     RSVP.delete(rsvp_id)
+
+    # Trigger waitlist promotion if a Registered RSVP was deleted
+    if old_status == "Registered":
+        process_waitlist_promotion(event_id)
 
     return jsonify({
         "message": "RSVP deleted successfully"

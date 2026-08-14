@@ -126,3 +126,14 @@ class RSVP:
     def delete(rsvp_id: int) -> int:
         query = "DELETE FROM RSVPs WHERE rsvp_id = ?"
         return DatabaseHelper.execute_write(query, (rsvp_id,))
+
+    @staticmethod
+    def get_next_waitlisted(event_id: int) -> Optional[Dict[str, Any]]:
+        query = """
+            SELECT rsvp_id, user_id, event_id, rsvp_status, rsvp_date
+            FROM RSVPs
+            WHERE event_id = ? AND rsvp_status = 'Waitlisted'
+            ORDER BY rsvp_date ASC, rsvp_id ASC
+            LIMIT 1
+        """
+        return DatabaseHelper.execute_query_one(query, (event_id,))

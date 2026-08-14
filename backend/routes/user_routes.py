@@ -5,12 +5,15 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from models.user import User
 from services.auth_service import generate_token, token_required
+from services.limiter import limiter
+from services.validation_service import ValidationService
 
 
 user_routes = Blueprint("user_routes", __name__)
 
 
 @user_routes.post("/users")
+@limiter.limit("10 per minute")
 def create_user():
     data = request.get_json(silent=True) or {}
 
@@ -26,6 +29,12 @@ def create_user():
             "fields": missing_fields
         }), 400
 
+    email = data["email"].strip().lower()
+    if not ValidationService.is_valid_email(email):
+        return jsonify({
+            "error": "Invalid email format"
+        }), 400
+
     if data["role"] not in ("student", "organizer"):
         return jsonify({
             "error": "Role must be student or organizer"
@@ -33,8 +42,8 @@ def create_user():
 
     try:
         user_id = User.create(
-            name=data["name"].strip(),
-            email=data["email"].strip().lower(),
+            name=ValidationService.sanitize_string(data["name"]),
+            email=email,
             password_hash=generate_password_hash(
                 data["password"],
                 method="pbkdf2:sha256"
@@ -45,8 +54,8 @@ def create_user():
         token = generate_token(
             user_id=user_id,
             role=data["role"],
-            name=data["name"].strip(),
-            email=data["email"].strip().lower()
+            name=ValidationService.sanitize_string(data["name"]),
+            email=email
         )
 
         return jsonify({
@@ -62,6 +71,7 @@ def create_user():
 
 
 @user_routes.post("/login")
+@limiter.limit("10 per minute")
 def login_user():
     data = request.get_json(silent=True) or {}
 
@@ -71,6 +81,11 @@ def login_user():
     if not email or not password:
         return jsonify({
             "error": "Email and password are required"
+        }), 400
+
+    if not ValidationService.is_valid_email(email):
+        return jsonify({
+            "error": "Invalid email format"
         }), 400
 
     user = User.get_by_email(email)
@@ -153,6 +168,12 @@ def update_user(user_id: int):
             "fields": missing_fields
         }), 400
 
+    email = data["email"].strip().lower()
+    if not ValidationService.is_valid_email(email):
+        return jsonify({
+            "error": "Invalid email format"
+        }), 400
+
     if data["role"] not in ("student", "organizer"):
         return jsonify({
             "error": "Role must be student or organizer"
@@ -161,8 +182,8 @@ def update_user(user_id: int):
     try:
         User.update(
             user_id=user_id,
-            name=data["name"].strip(),
-            email=data["email"].strip().lower(),
+            name=ValidationService.sanitize_string(data["name"]),
+            email=email,
             role=data["role"]
         )
 

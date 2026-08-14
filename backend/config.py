@@ -12,6 +12,8 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 class Config:
     FLASK_ENV = os.environ.get("FLASK_ENV", "development")
     FLASK_DEBUG = os.environ.get("FLASK_DEBUG", "True").lower() in ("true", "1", "yes")
+    TESTING = FLASK_ENV == "testing"
+    RATELIMIT_ENABLED = os.environ.get("FLASK_ENV") != "testing"
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production-12345")
     PORT = int(os.environ.get("PORT", 5000))
 
@@ -21,3 +23,4 @@ class Config:
         DATABASE_PATH = db_name
     else:
         DATABASE_PATH = os.path.abspath(os.path.join(BASE_DIR, db_name))
+
