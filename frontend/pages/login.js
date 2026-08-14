@@ -1,3 +1,4 @@
+import { saveSession } from "../utils/session.js";
 export function renderLogin(mainContent) {
   mainContent.innerHTML = `
     <section class="auth-page">
@@ -164,11 +165,7 @@ function initializeLoginForm() {
       if (!response.ok) {
         throw new Error(data.error || "Unable to log in.");
       }
-
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify(data.user)
-      );
+      saveSession(data.user, data.token);
       
       window.location.hash =
         data.user.role === "organizer"

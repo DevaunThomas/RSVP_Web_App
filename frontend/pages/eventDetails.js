@@ -1,7 +1,6 @@
 import { getCurrentUser } from "../utils/session.js";
-import {
-  resolveEventStatus
-} from "../utils/eventStatus.js";
+import { resolveEventStatus } from "../utils/eventStatus.js";
+import { authenticatedFetch } from "../utils/api.js";
 
 function formatEventDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -101,7 +100,7 @@ export async function renderEventDetails(mainContent, eventId) {
       currentUser &&
       currentUser.role === "student"
     ) {
-      const rsvpsResponse = await fetch(
+      const rsvpsResponse = await authenticatedFetch(
         `http://127.0.0.1:5000/api/users/${currentUser.user_id}/rsvps`
       );
 
@@ -304,7 +303,7 @@ export async function renderEventDetails(mainContent, eventId) {
         cancelEventButton.textContent = "Canceling...";
 
         try {
-          const response = await fetch(
+          const response = await authenticatedFetch(
             `http://127.0.0.1:5000/api/events/${numericEventId}/cancel`,
             {
               method: "PATCH",
@@ -348,7 +347,7 @@ export async function renderEventDetails(mainContent, eventId) {
         rsvpButton.textContent = "Submitting...";
         
         try {
-          const response = await fetch(
+          const response = await authenticatedFetch(
             "http://127.0.0.1:5000/api/rsvps",
             {
               method: "POST",

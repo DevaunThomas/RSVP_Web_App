@@ -1,5 +1,5 @@
 import { getCurrentUser } from "../utils/session.js";
-
+import { authenticatedFetch } from "../utils/api.js";
 const API_BASE_URL = "http://127.0.0.1:5000/api";
 
 function escapeHtml(value) {
@@ -191,10 +191,10 @@ export async function renderManageAttendees(
 
     const [rsvpResponse, attendanceResponse] =
       await Promise.all([
-        fetch(
+        authenticatedFetch(
           `${API_BASE_URL}/events/${numericEventId}/rsvps`
         ),
-        fetch(
+        authenticatedFetch(
           `${API_BASE_URL}/events/${numericEventId}/attendance`
         ),
       ]);
@@ -362,7 +362,7 @@ export async function renderManageAttendees(
         button.textContent = "Saving...";
 
         try {
-          const response = await fetch(
+          const response = await authenticatedFetch(
             `${API_BASE_URL}/events/${numericEventId}/attendance/${userId}`,
             {
               method: "PATCH",

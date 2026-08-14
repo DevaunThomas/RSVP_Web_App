@@ -1,6 +1,7 @@
 import { renderEventCard } from "../components/eventCard.js";
 import { getCurrentUser } from "../utils/session.js";
 import { resolveEventStatus } from "../utils/eventStatus.js";
+import { authenticatedFetch } from "../utils/api.js";
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -87,7 +88,7 @@ export async function renderStudentDashboard(mainContent) {
     ).slice(0, 3);
 
     // Load student's RSVPs
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `http://127.0.0.1:5000/api/users/${currentUser.user_id}/rsvps`
     );
 
@@ -112,35 +113,27 @@ export async function renderStudentDashboard(mainContent) {
       return eventDateTime >= currentDateTime;
     });
 
-    const attendanceResults = await Promise.all(
-      uncanceledRsvps.map(async (rsvp) => {
-        const attendanceResponse = await fetch(
-          `http://127.0.0.1:5000/api/events/${rsvp.event_id}/attendance`
-        );
-
-        if (!attendanceResponse.ok) {
-          throw new Error(
-            `Failed to load attendance for ${rsvp.title}.`
-          );
-        }
-
-        const attendanceRecords =
-          await attendanceResponse.json();
-
-        const studentAttendance = attendanceRecords.find(
-          (record) =>
-            Number(record.user_id) ===
-            Number(currentUser.user_id)
-        );
-
-        return {
-          ...rsvp,
-          attended: Boolean(studentAttendance?.attended),
-        };
-      })
+    const attendanceResponse = await authenticatedFetch(
+      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/attendance`
     );
 
-    const attendanceHistory = attendanceResults
+    if (!attendanceResponse.ok) {
+      throw new Error(
+        "Failed to load student attendance."
+      );
+    }
+
+    const attendanceRecords =
+      await attendanceResponse.json();
+
+    const attendanceByEventId = new Map(
+      attendanceRecords.map((record) => [
+        Number(record.event_id),
+        Boolean(record.attended),
+      ])
+    );
+
+    const attendanceHistory = uncanceledRsvps
       .filter((rsvp) => {
         if (rsvp.rsvp_status !== "Registered") {
           return false;
@@ -154,6 +147,12 @@ export async function renderStudentDashboard(mainContent) {
 
         return eventDateTime < currentDateTime;
       })
+      .map((rsvp) => ({
+        ...rsvp,
+        attended:
+          attendanceByEventId.get(Number(rsvp.event_id)) ||
+          false,
+      }))
       .sort(
         (firstRsvp, secondRsvp) =>
           new Date(
@@ -361,7 +360,7 @@ export async function renderStudentDashboard(mainContent) {
         cancelButton.textContent = "Canceling...";
 
         try {
-          const response = await fetch(
+          const response = await authenticatedFetch(
             `http://127.0.0.1:5000/api/rsvps/${rsvpId}/cancel`,
             {
               method: "PATCH",

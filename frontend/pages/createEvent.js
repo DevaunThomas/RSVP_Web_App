@@ -1,4 +1,5 @@
 import { getCurrentUser } from "../utils/session.js";
+import { authenticatedFetch } from "../utils/api.js";
 
 // Render the create event page
 export function renderCreateEvent(mainContent) {
@@ -273,7 +274,7 @@ function initializeCreateEventForm(currentUser) {
         organizer_id: currentUser.user_id
         };
         
-        fetch("http://127.0.0.1:5000/api/events", {
+        authenticatedFetch("http://127.0.0.1:5000/api/events", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
