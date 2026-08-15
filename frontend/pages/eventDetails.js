@@ -1,4 +1,6 @@
 import { getCurrentUser } from "../utils/session.js";
+import { resolveEventStatus } from "../utils/eventStatus.js";
+import { apiFetch, authenticatedFetch, } from "../utils/api.js";
 
 function formatEventDate(dateString) {
   const date = new Date(`${dateString}T00:00:00`);
@@ -78,8 +80,8 @@ export async function renderEventDetails(mainContent, eventId) {
   `;
 
   try {
-    const response = await fetch(
-      `http://127.0.0.1:5000/api/events/${numericEventId}`
+    const response = await apiFetch(
+      `/events/${numericEventId}`
     );
 
     if (response.status === 404) {
@@ -92,6 +94,29 @@ export async function renderEventDetails(mainContent, eventId) {
     }
 
     const apiEvent = await response.json();
+    let existingRsvp = null;
+
+    if (
+      currentUser &&
+      currentUser.role === "student"
+    ) {
+      const rsvpsResponse = await authenticatedFetch(
+        `/users/${currentUser.user_id}/rsvps`
+      );
+
+      if (!rsvpsResponse.ok) {
+        throw new Error(
+          "Failed to check your RSVP status."
+        );
+      }
+
+      const userRsvps = await rsvpsResponse.json();
+
+      existingRsvp = userRsvps.find(
+        (rsvp) =>
+          Number(rsvp.event_id) === numericEventId
+      ) || null;
+    }
 
     const event = {
       id: apiEvent.event_id,
@@ -104,22 +129,46 @@ export async function renderEventDetails(mainContent, eventId) {
       organizer: apiEvent.organizer_name || "Unknown organizer",
       capacity: Number(apiEvent.capacity) || 0,
       rsvpCount: Number(apiEvent.registered_count) || 0,
-      status:
-        apiEvent.status?.toLowerCase() === "active"
-          ? "open"
-          : apiEvent.status?.toLowerCase() || "open",
+      status: apiEvent.status || "Active",
     };
+
+    event.status = resolveEventStatus(event);
+
+    const isEventOwner =
+      currentUser?.role === "organizer" &&
+      Number(apiEvent.organizer_id) ===
+        Number(currentUser.user_id);
 
     const remainingSpots = Math.max(
       event.capacity - event.rsvpCount,
       0
     );
 
-    const isUnavailable =
+    const isFull =
       event.status === "full" ||
-      event.status === "canceled" ||
-      event.status === "past" ||
       remainingSpots === 0;
+
+    const isUnavailable =
+      event.status === "canceled" ||
+      event.status === "past";
+
+      const activeRsvpStatus = [
+        "Registered",
+        "Waitlisted",
+      ].includes(existingRsvp?.rsvp_status)
+        ? existingRsvp.rsvp_status
+        : null;
+
+      const rsvpButtonIsDisabled =
+        isUnavailable || Boolean(activeRsvpStatus);
+
+      const rsvpButtonText =
+        activeRsvpStatus ||
+        (isUnavailable
+          ? "RSVP Unavailable"
+          : isFull
+            ? "Join Waitlist"
+            : "RSVP");
 
     const eventTime = event.endTime
       ? `${formatEventTime(event.startTime)} – ${formatEventTime(
@@ -177,23 +226,119 @@ export async function renderEventDetails(mainContent, eventId) {
             ${remainingSpots}
           </p>
         </section>
+        ${
+          isEventOwner
+          ? apiEvent.status === "Canceled"
+            ? `
+              <div class="event-detail__actions">
+                <a
+                  href="#/manage-attendees/${numericEventId}"
+                  class="button button--primary"
+                >
+                  View Attendees
+                </a>
 
-        <button
-          type="button"
-          id="rsvp-button"
-          class="button button--primary"
-          ${isUnavailable ? "disabled" : ""}
-        >
-          ${isUnavailable ? "RSVP Unavailable" : "RSVP"}
-        </button>
+                <button
+                  type="button"
+                  class="button button--secondary"
+                  disabled
+                >
+                  Event Canceled
+                </button>
+              </div>
+            `
+            : `
+              <div class="event-detail__actions">
+                <a
+                  href="#/edit-event/${numericEventId}"
+                  class="button button--primary"
+                >
+                  Edit Event
+                </a>
+
+                <a
+                  href="#/manage-attendees/${numericEventId}"
+                  class="button button--secondary"
+                >
+                  Manage Attendees
+                </a>
+
+                <button
+                  type="button"
+                  id="cancel-event-button"
+                  class="button button--danger"
+                >
+                  Cancel Event
+                </button>
+              </div>
+            `
+          : `
+              <button
+                type="button"
+                id="rsvp-button"
+                class="button button--primary"
+                ${rsvpButtonIsDisabled ? "disabled" : ""}
+              >
+                ${escapeHtml(rsvpButtonText)}
+              </button>
+            `
+        }
       </section>
     `;
-    
+    const cancelEventButton = mainContent.querySelector(
+      "#cancel-event-button"
+    );
+
+    if (cancelEventButton) {
+      cancelEventButton.addEventListener("click", async () => {
+        const confirmed = window.confirm(
+          "Are you sure you want to cancel this event? This action cannot be undone."
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        cancelEventButton.disabled = true;
+        cancelEventButton.textContent = "Canceling...";
+
+        try {
+          const response = await authenticatedFetch(
+            `/events/${numericEventId}/cancel`,
+            {
+              method: "PATCH",
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              result.error || "Unable to cancel the event."
+            );
+          }
+
+          window.alert("Event canceled successfully.");
+
+          await renderEventDetails(
+            mainContent,
+            numericEventId
+          );
+        } catch (error) {
+          window.alert(error.message);
+
+          cancelEventButton.disabled = false;
+          cancelEventButton.textContent = "Cancel Event";
+        }
+      });
+    }
+
     const rsvpButton = mainContent.querySelector("#rsvp-button");
 
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       currentUser &&
       currentUser.role === "student"
     ) {
@@ -202,8 +347,8 @@ export async function renderEventDetails(mainContent, eventId) {
         rsvpButton.textContent = "Submitting...";
         
         try {
-          const response = await fetch(
-            "http://127.0.0.1:5000/api/rsvps",
+          const response = await authenticatedFetch(
+            "/rsvps",
             {
               method: "POST",
               headers: {
@@ -235,7 +380,9 @@ export async function renderEventDetails(mainContent, eventId) {
           console.error("Failed to create RSVP.", error);
 
           rsvpButton.disabled = false;
-          rsvpButton.textContent = "RSVP";
+          rsvpButton.textContent = isFull
+            ? "Join Waitlist"
+            : "RSVP";
         }
       });
     }
@@ -243,6 +390,7 @@ export async function renderEventDetails(mainContent, eventId) {
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       !currentUser
     ) {
       rsvpButton.textContent = "Log in to RSVP";
@@ -255,6 +403,7 @@ export async function renderEventDetails(mainContent, eventId) {
     if (
       rsvpButton &&
       !isUnavailable &&
+      !activeRsvpStatus &&
       currentUser &&
       currentUser.role !== "student"
     ) {

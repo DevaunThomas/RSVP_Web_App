@@ -1,6 +1,6 @@
 import { renderEventCard } from "../components/eventCard.js";
 import { getCurrentUser } from "../utils/session.js";
-
+import { authenticatedFetch } from "../utils/api.js";
 
 function sortRsvpsByDate(rsvps) {
   return [...rsvps].sort(
@@ -67,8 +67,8 @@ export async function renderOrganizerDashboard(mainContent) {
   }
 
   try {
-    const eventsResponse = await fetch(
-      `http://127.0.0.1:5000/api/organizers/${currentUser.user_id}/events`
+    const eventsResponse = await authenticatedFetch(
+      `/organizers/${currentUser.user_id}/events`
     );
 
     if (!eventsResponse.ok) {
@@ -98,8 +98,8 @@ export async function renderOrganizerDashboard(mainContent) {
     // Load the RSVPs for every organizer event.
     const rsvpResponses = await Promise.all(
       apiEvents.map(async (event) => {
-        const response = await fetch(
-          `http://127.0.0.1:5000/api/events/${event.event_id}/rsvps`
+        const response = await authenticatedFetch(
+          `/events/${event.event_id}/rsvps`
         );
 
         if (!response.ok) {

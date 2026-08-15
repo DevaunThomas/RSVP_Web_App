@@ -1,3 +1,5 @@
+import { apiFetch } from "../utils/api.js";
+
 export function renderRegister(mainContent) {
   mainContent.innerHTML = `
     <section class="auth-page">
@@ -279,8 +281,8 @@ function initializeRegisterForm() {
     }
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/users",
+      const response = await apiFetch(
+        "/users",
         {
           method: "POST",
           headers: {

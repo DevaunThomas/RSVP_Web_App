@@ -1,17 +1,54 @@
-import { renderNavbar, initializeNavbar } from "./components/navbar.js";
-import { renderFooter } from "./components/footer.js";
-import { renderEventsPage } from "./pages/events.js";
-import { renderEventDetails } from "./pages/eventDetails.js";
+import {
+  renderNavbar,
+  initializeNavbar,
+  updateNavbarActiveState,
+} from "./components/navbar.js";
+
+import {
+  renderFooter,
+} from "./components/footer.js";
+
+import {
+  renderEventsPage,
+} from "./pages/events.js";
+
+import {
+  renderEventDetails,
+} from "./pages/eventDetails.js";
+
 import { renderLogin } from "./pages/login.js";
 import { renderRegister } from "./pages/register.js";
-import { renderStudentDashboard } from "./pages/studentDashboard.js";
-import { renderOrganizerDashboard } from "./pages/organizerDashboard.js";
-import { renderCreateEvent } from "./pages/createEvent.js";
+
+import {
+  renderStudentDashboard,
+} from "./pages/studentDashboard.js";
+
+import {
+  renderOrganizerDashboard,
+} from "./pages/organizerDashboard.js";
+
+import {
+  renderCreateEvent,
+} from "./pages/createEvent.js";
+
+import {
+  renderEditEvent,
+} from "./pages/editEvent.js";
+
+import {
+  renderManageAttendees,
+} from "./pages/manageAttendees.js";
+
+import {
+  renderNotifications,
+} from "./pages/notifications.js";
 
 const app = document.getElementById("app");
 
 function renderCurrentPage(mainContent) {
   const hash = window.location.hash;
+
+  updateNavbarActiveState();
 
   if (hash === "#/login" || hash === "#login") {
     renderLogin(mainContent);
@@ -20,6 +57,14 @@ function renderCurrentPage(mainContent) {
 
   if (hash === "#/register" || hash === "#register") {
     renderRegister(mainContent);
+    return;
+  }
+
+  if (
+    hash === "#/notifications" ||
+    hash === "#notifications"
+  ) {
+    renderNotifications(mainContent);
     return;
   }
 
@@ -41,6 +86,25 @@ function renderCurrentPage(mainContent) {
 
   if (hash === "#/create-event" || hash === "#create-event") {
     renderCreateEvent(mainContent);
+    return;
+  }
+  if (
+    hash.startsWith("#/edit-event/") ||
+    hash.startsWith("#edit-event/")
+  ) {
+    const eventId = hash.split("/").pop();
+
+    renderEditEvent(mainContent, eventId);
+    return;
+  }
+
+  if (
+    hash.startsWith("#/manage-attendees/") ||
+    hash.startsWith("#manage-attendees/")
+  ) {
+    const eventId = hash.split("/").pop();
+
+    renderManageAttendees(mainContent, eventId);
     return;
   }
   

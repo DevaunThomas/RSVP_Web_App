@@ -1,3 +1,7 @@
+import {
+  resolveEventStatus
+} from "../utils/eventStatus.js";
+
 const statusLabels = {
   open: "Open",
   full: "Full",
@@ -35,29 +39,13 @@ function formatEventTime(timeString) {
   }).format(date);
 }
 
-function getEventStatus(event) {
-  if (event.status === "canceled") {
-    return "canceled";
-  }
-
-  if (event.status === "past") {
-    return "past";
-  }
-
-  if (event.status === "full" || event.rsvpCount >= event.capacity) {
-    return "full";
-  }
-
-  return "open";
-}
-
 export function renderEventCard(event) {
   if (!event?.id || !event?.title || !event?.date) {
     console.error("Cannot render an event card with missing event data.", event);
     return "";
   }
 
-  const status = getEventStatus(event);
+  const status = resolveEventStatus(event);
   const remainingSpots = Math.max(event.capacity - event.rsvpCount, 0);
 
   const capacityText =

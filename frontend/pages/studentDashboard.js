@@ -1,5 +1,31 @@
 import { renderEventCard } from "../components/eventCard.js";
 import { getCurrentUser } from "../utils/session.js";
+import { resolveEventStatus } from "../utils/eventStatus.js";
+import { apiFetch, authenticatedFetch } from "../utils/api.js";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getRsvpStatusClass(status) {
+  const normalizedStatus = String(status)
+    .toLowerCase();
+
+  const allowedStatuses = [
+    "registered",
+    "waitlisted",
+    "canceled",
+  ];
+
+  return allowedStatuses.includes(normalizedStatus)
+    ? normalizedStatus
+    : "unknown";
+}
 
 function sortEventsByDate(events) {
   return [...events].sort((firstEvent, secondEvent) => {
@@ -51,9 +77,7 @@ export async function renderStudentDashboard(mainContent) {
 
   try {
     // Load all events
-    const eventsResponse = await fetch(
-      "http://127.0.0.1:5000/api/events"
-    );
+    const eventsResponse = await apiFetch("/events");
 
     if (!eventsResponse.ok) {
       throw new Error("Failed to load events.");
@@ -61,25 +85,33 @@ export async function renderStudentDashboard(mainContent) {
 
     const apiEvents = await eventsResponse.json();
 
+    const dashboardEvents = apiEvents.map((event) => ({
+      id: event.event_id,
+      title: event.title,
+      description: event.description || "",
+      date: event.event_date,
+      startTime: event.event_time,
+      endTime: event.end_time || null,
+      location: event.location,
+      organizer:
+        event.organizer_name || "Unknown organizer",
+      capacity: Number(event.capacity) || 0,
+      rsvpCount: Number(event.registered_count) || 0,
+      status: event.status || "Active",
+    }));
+
     const upcomingEvents = sortEventsByDate(
-      apiEvents.map((event) => ({
-        id: event.event_id,
-        title: event.title,
-        description: event.description || "",
-        date: event.event_date,
-        startTime: event.event_time,
-        endTime: event.end_time || null,
-        location: event.location,
-        organizer: event.organizer_name || "Unknown organizer",
-        capacity: Number(event.capacity) || 0,
-        rsvpCount: Number(event.registered_count) || 0,
-        status: (event.status || "Open").toLowerCase(),
-      }))
+      dashboardEvents
+        .map((event) => ({
+          ...event,
+          status: resolveEventStatus(event),
+        }))
+        .filter((event) => event.status !== "past")
     ).slice(0, 3);
 
     // Load student's RSVPs
-    const response = await fetch(
-      `http://127.0.0.1:5000/api/users/${currentUser.user_id}/rsvps`
+    const response = await authenticatedFetch(
+      `/users/${currentUser.user_id}/rsvps`
     );
 
     if (!response.ok) {
@@ -87,10 +119,79 @@ export async function renderStudentDashboard(mainContent) {
     }
 
     const rsvps = await response.json();
-
-    const activeRsvps = rsvps.filter(
-      (rsvp) => rsvp.rsvp_status !== "Canceled"
+    const uncanceledRsvps = rsvps.filter(
+      (rsvp) =>
+        rsvp.rsvp_status !== "Canceled" &&
+        String(rsvp.event_status).toLowerCase() !==
+          "canceled"
     );
+
+    const currentDateTime = new Date();
+
+    const activeRsvps = uncanceledRsvps.filter((rsvp) => {
+      const eventDateTime = new Date(
+        `${rsvp.event_date}T${
+          rsvp.event_time || "00:00"
+        }`
+      );
+
+      return eventDateTime >= currentDateTime;
+    });
+
+    const attendanceResponse = await authenticatedFetch(
+      `/users/${currentUser.user_id}/attendance`
+    );
+
+    if (!attendanceResponse.ok) {
+      throw new Error(
+        "Failed to load student attendance."
+      );
+    }
+
+    const attendanceRecords =
+      await attendanceResponse.json();
+
+    const attendanceByEventId = new Map(
+      attendanceRecords.map((record) => [
+        Number(record.event_id),
+        Boolean(record.attended),
+      ])
+    );
+
+    const attendanceHistory = uncanceledRsvps
+      .filter((rsvp) => {
+        if (rsvp.rsvp_status !== "Registered") {
+          return false;
+        }
+
+        const eventDateTime = new Date(
+          `${rsvp.event_date}T${
+            rsvp.event_time || "00:00"
+          }`
+        );
+
+        return eventDateTime < currentDateTime;
+      })
+      .map((rsvp) => ({
+        ...rsvp,
+        attended:
+          attendanceByEventId.get(Number(rsvp.event_id)) ||
+          false,
+      }))
+      .sort(
+        (firstRsvp, secondRsvp) =>
+          new Date(
+            `${secondRsvp.event_date}T${
+              secondRsvp.event_time || "00:00"
+            }`
+          ) -
+          new Date(
+            `${firstRsvp.event_date}T${
+              firstRsvp.event_time || "00:00"
+            }`
+          )
+      );
+
 
     mainContent.innerHTML = `
       <section class="dashboard-page">
@@ -98,7 +199,7 @@ export async function renderStudentDashboard(mainContent) {
           <h1>Student Dashboard</h1>
 
           <p>
-            Welcome back, ${currentUser.name}! Browse upcoming events and manage your RSVPs.
+            Welcome back, ${escapeHtml(currentUser.name)}! Browse upcoming events and manage your RSVPs.
           </p>
         </div>
 
@@ -134,7 +235,7 @@ export async function renderStudentDashboard(mainContent) {
                           <article class="rsvp-card">
                             <div class="rsvp-card__body">
                               <h3 class="rsvp-card__title">
-                                ${rsvp.title}
+                                ${escapeHtml(rsvp.title)}
                               </h3>
 
                               <dl class="rsvp-card__details">
@@ -150,16 +251,16 @@ export async function renderStudentDashboard(mainContent) {
 
                                 <div class="rsvp-card__detail">
                                   <dt>Location</dt>
-                                  <dd>${rsvp.location}</dd>
+                                  <dd>${escapeHtml(rsvp.location)}</dd>
                                 </div>
 
                                 <div class="rsvp-card__detail">
                                   <dt>Status</dt>
                                   <dd>
                                     <span
-                                      class="rsvp-status rsvp-status--${rsvp.rsvp_status.toLowerCase()}"
+                                      class="rsvp-status rsvp-status--${getRsvpStatusClass(rsvp.rsvp_status)}"
                                     >
-                                      ${rsvp.rsvp_status}
+                                      ${escapeHtml(rsvp.rsvp_status)}
                                     </span>
                                   </dd>
                                 </div>
@@ -170,19 +271,22 @@ export async function renderStudentDashboard(mainContent) {
                             <div class="rsvp-card__footer">
                               <div class="dashboard-list__actions">
                                 <a
-                                  href="#/event/${rsvp.event_id}"
+                                  href="#/event/${Number(rsvp.event_id)}"
                                   class="button button--primary"
                                 >
                                   View Event
                                 </a>
 
                                 ${
-                                  rsvp.rsvp_status === "Registered"
+                                  [
+                                    "Registered",
+                                    "Waitlisted",
+                                  ].includes(rsvp.rsvp_status)
                                     ? `
                                       <button
                                         class="button button--secondary cancel-rsvp-button"
                                         type="button"
-                                        data-rsvp-id="${rsvp.rsvp_id}"
+                                        data-rsvp-id="${Number(rsvp.rsvp_id)}"
                                       >
                                         Cancel RSVP
                                       </button>
@@ -195,7 +299,59 @@ export async function renderStudentDashboard(mainContent) {
                         `
                       )
                       .join("")
-                  : "<p>You haven't RSVP'd to any events yet.</p>"
+                  : "<p>You have no upcoming RSVPs.</p>"
+              }
+            </div>
+          </section>
+
+          <section class="dashboard-card">
+            <div class="dashboard-card__header">
+              <h2>Attendance History</h2>
+            </div>
+
+            <div class="attendance-history">
+              ${
+                attendanceHistory.length > 0
+                  ? attendanceHistory
+                      .map(
+                        (record) => `
+                          <article class="attendance-history__item">
+                            <div>
+                              <h3>${escapeHtml(record.title)}</h3>
+
+                              <p>
+                                ${formatEventDate(record.event_date)}
+                                at
+                                ${formatEventTime(record.event_time)}
+                              </p>
+
+                              <p>${escapeHtml(record.location)}</p>
+                            </div>
+
+                            <span
+                              class="status-badge ${
+                                record.attended
+                                  ? "status-badge--attended"
+                                  : "status-badge--not-attended"
+                              }"
+                            >
+                              ${
+                                record.attended
+                                  ? "Attended"
+                                  : "Not Attended"
+                              }
+                            </span>
+                          </article>
+                        `
+                      )
+                      .join("")
+                  : `
+                    <div class="attendance-history__empty">
+                      <p>
+                        No completed events are available in your attendance history yet.
+                      </p>
+                    </div>
+                  `
               }
             </div>
           </section>
@@ -229,8 +385,8 @@ export async function renderStudentDashboard(mainContent) {
         cancelButton.textContent = "Canceling...";
 
         try {
-          const response = await fetch(
-            `http://127.0.0.1:5000/api/rsvps/${rsvpId}/cancel`,
+          const response = await authenticatedFetch(
+            `/rsvps/${rsvpId}/cancel`,
             {
               method: "PATCH",
             }
