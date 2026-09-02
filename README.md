@@ -1,5 +1,5 @@
 # Campus Event Planning & RSVP App
-A web application developed for CIS 376 Software Engineering II. The application allows students to discover campus events, submit RSVPs, join waitlists, receive notifications, and view attendance history. Organizers can create and manage events, review attendees, and record attendance.
+A web application that allows students to discover campus events, submit RSVPs, join waitlists, receive notifications, and view attendance history. Organizers can create and manage events, review attendees, and record attendance.
 
 ## Features
 
